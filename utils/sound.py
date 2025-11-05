@@ -63,18 +63,24 @@ class SoundManager:
             # Verifica se pygame já foi inicializado
             if not pygame.get_init():
                 pygame.init()
-            
+
             # Reinicializa mixer com configurações específicas
             pygame.mixer.quit()
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-            
+
             self._generate_all_sounds()
             self._generate_music_tracks()
             self.enabled = True
             SoundManager._initialized = True
+        except pygame.error as e:
+            print(f"⚠️ Sistema de áudio indisponível: {e}")
+            print("ℹ️ O jogo continuará sem som")
+            self.enabled = False
         except Exception as e:
+            print(f"❌ Erro inesperado ao inicializar áudio: {e}")
             import traceback
             traceback.print_exc()
+            self.enabled = False
     
     def _generate_tone(self, frequency, duration, volume=0.3):
         """
@@ -113,9 +119,10 @@ class SoundManager:
             sound = pygame.sndarray.make_sound(buf_stereo)
             # Mantém referência ao buffer para evitar garbage collection
             self._sound_buffers.append(buf_stereo)
-            
+
             return sound
-        except Exception as e:
+        except (pygame.error, ValueError, TypeError) as e:
+            print(f"⚠️ Erro ao gerar tom de áudio: {e}")
             return None
     
     def _generate_push_sound(self):
@@ -360,8 +367,10 @@ class SoundManager:
                     self.current_music = music
                 else:
                     self.current_music = music  # Armazena mas não toca
-            except Exception as e:
+            except pygame.error as e:
                 print(f"⚠️ Erro ao tocar música: {e}")
+            except Exception as e:
+                print(f"❌ Erro inesperado ao tocar música: {e}")
     
     def stop_music(self):
         """Para a música de fundo"""
@@ -369,38 +378,39 @@ class SoundManager:
             try:
                 self.current_music.stop()
                 self.current_music = None
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"⚠️ Erro ao parar música: {e}")
+                self.current_music = None
     
     def set_music_volume(self, volume):
         """
         Define volume da música.
-        
+
         Args:
             volume: Volume de 0.0 a 1.0
         """
         if self.enabled and self.current_music:
             try:
                 self.current_music.set_volume(volume)
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"⚠️ Erro ao definir volume: {e}")
     
     def play(self, sound_name):
         """
         Toca um som.
-        
+
         Args:
             sound_name: Nome do som a tocar
         """
         if not self.enabled or not self.sfx_enabled:
             return
-        
+
         sound = self.sounds.get(sound_name)
         if sound:
             try:
                 sound.play()
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"⚠️ Erro ao tocar som '{sound_name}': {e}")
     
     def toggle_music(self):
         """Liga/desliga música de fundo"""
@@ -415,15 +425,15 @@ class SoundManager:
                 try:
                     self.current_music.set_volume(self.current_music_volume)
                     self.current_music.play(loops=-1)
-                except:
-                    pass
+                except pygame.error as e:
+                    print(f"⚠️ Erro ao religar música: {e}")
         else:
             # Desliga música
             if self.current_music:
                 try:
                     self.current_music.stop()
-                except:
-                    pass
+                except pygame.error as e:
+                    print(f"⚠️ Erro ao desligar música: {e}")
         
         return self.music_enabled
     

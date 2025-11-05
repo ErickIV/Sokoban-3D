@@ -7,8 +7,15 @@ Inclui cubos, grama 3D com Display Lists, e outras formas básicas.
 
 import random
 import math
-from OpenGL.GL import *
-from config import *
+from OpenGL.GL import (
+    glBegin, glEnd, glVertex3f, glNormal3f, glColor4f,
+    glGenLists, glNewList, glEndList, glCallList, glDeleteLists,
+    GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES
+)
+from config import (
+    GRASS_DENSITY, GRASS_AREA, GRASS_MIN_HEIGHT, GRASS_MAX_HEIGHT,
+    GRASS_BLADE_WIDTH, PARTICLE_COUNT
+)
 
 
 class Primitives:

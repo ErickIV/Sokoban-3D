@@ -40,10 +40,18 @@ OTIMIZAÇÕES:
 - Sem sombras dinâmicas (mantém performance)
 """
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
 import random
 import math
+from OpenGL.GL import (
+    glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef,
+    glEnable, glDisable, glBlendFunc, glColor4f, glBegin, glEnd,
+    glTexCoord2f, glVertex3f, glGenTextures, glBindTexture,
+    glTexParameteri, glTexImage2D, glDepthMask,
+    GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DEPTH_TEST,
+    GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER,
+    GL_LINEAR, GL_RGBA, GL_UNSIGNED_BYTE, GL_QUADS, GL_TRUE, GL_FALSE
+)
+from OpenGL.GLU import gluLookAt
 
 
 class Cloud:

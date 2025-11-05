@@ -1,0 +1,25 @@
+# BoxPush 3D - Dependencies
+# Python 3.8+ required
+
+# Game Engine & Window Management
+pygame>=2.5.0
+
+# 3D Graphics
+PyOpenGL>=3.1.7
+PyOpenGL-accelerate>=3.1.7
+
+# Audio & Math
+numpy>=1.24.0
+
+# Development Dependencies (optional - uncomment to use)
+# Testing
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+
+# Type Checking
+# mypy>=1.5.0
+
+# Code Formatting & Linting
+# black>=23.7.0
+# flake8>=6.1.0
+# pylint>=2.17.0

@@ -7,10 +7,15 @@ Renderização 2D sobre a cena 3D.
 
 import math
 import time
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-from config import *
+from OpenGL.GL import (
+    glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
+    glColor3f, glColor4f, glBegin, glEnd, glVertex2f, glRasterPos2f,
+    glDisable, glEnable, glLineWidth,
+    GL_PROJECTION, GL_MODELVIEW, GL_DEPTH_TEST, GL_LINES, GL_LINE_LOOP
+)
+from OpenGL.GLU import gluOrtho2D
+from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18, GLUT_BITMAP_HELVETICA_12, glutBitmapCharacter
+from config import GAME_STATE_MENU
 
 
 class UI:

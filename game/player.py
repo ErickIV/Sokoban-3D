@@ -28,15 +28,19 @@ CARACTERÍSTICAS:
 """
 
 import math
-from config import *
+from typing import Tuple, List
+from config import (
+    PLAYER_EYE_HEIGHT, PLAYER_RADIUS, MOVE_SPEED,
+    RUN_MULTIPLIER, MOUSE_SENSITIVITY
+)
 from .physics import Physics
 from utils.sound import get_sound_manager
 
 
 class Player:
     """Classe que representa o jogador e sua câmera"""
-    
-    def __init__(self):
+
+    def __init__(self) -> None:
         """Inicializa jogador na posição padrão"""
         self.x = 0.0
         self.y = 0.0
@@ -53,10 +57,10 @@ class Player:
         self.last_step_time = 0.0
         self.step_interval = 0.35  # Intervalo entre sons de passo (segundos)
     
-    def set_position(self, x, y, z):
+    def set_position(self, x: float, y: float, z: float) -> None:
         """
         Define posição do jogador.
-        
+
         Args:
             x, y, z: Nova posição
         """
@@ -64,11 +68,11 @@ class Player:
         self.y = y
         self.z = z
     
-    def get_position(self):
+    def get_position(self) -> Tuple[float, float, float]:
         """Retorna posição atual"""
         return (self.x, self.y, self.z)
-    
-    def get_grid_position(self):
+
+    def get_grid_position(self) -> Tuple[int, int, int]:
         """Retorna posição arredondada para o grid"""
         return (
             Physics.grid_round(self.x),
@@ -76,10 +80,10 @@ class Player:
             Physics.grid_round(self.z)
         )
     
-    def update_camera_rotation(self, dx, dy):
+    def update_camera_rotation(self, dx: float, dy: float) -> None:
         """
         Atualiza rotação da câmera baseado no movimento do mouse.
-        
+
         Args:
             dx: Movimento horizontal do mouse
             dy: Movimento vertical do mouse
@@ -90,10 +94,10 @@ class Player:
         # Limita pitch para evitar gimbal lock
         self.camera_pitch = max(-89.0, min(89.0, self.camera_pitch))
     
-    def get_camera_vectors(self):
+    def get_camera_vectors(self) -> Tuple[float, float, float, float]:
         """
         Calcula vetores de direção da câmera.
-        
+
         Returns:
             tuple: (forward_x, forward_z, right_x, right_z)
         """
@@ -106,19 +110,22 @@ class Player:
         
         return forward_x, forward_z, right_x, right_z
     
-    def get_facing_direction(self):
+    def get_facing_direction(self) -> Tuple[int, int]:
         """
         Retorna direção cardinal que o jogador está olhando.
-        
+
         Returns:
             tuple: (dir_x, dir_z) em valores -1, 0 ou 1
         """
         return Physics.get_cardinal_direction(self.camera_yaw)
     
-    def move(self, input_forward, input_strafe, dt, walls, boxes, run=False, current_time=0.0):
+    def move(self, input_forward: float, input_strafe: float, dt: float,
+            walls: List[Tuple[float, float, float]],
+            boxes: List[Tuple[float, float, float]],
+            run: bool = False, current_time: float = 0.0) -> bool:
         """
         Move o jogador baseado em input.
-        
+
         Args:
             input_forward: Input frente/trás (-1 a 1)
             input_strafe: Input esquerda/direita (-1 a 1)
@@ -127,7 +134,7 @@ class Player:
             boxes: Lista de caixas
             run: Se está correndo
             current_time: Tempo atual para som de passos
-            
+
         Returns:
             bool: True se moveu
         """
@@ -174,7 +181,7 @@ class Player:
         
         return moved
     
-    def reset_camera(self):
+    def reset_camera(self) -> None:
         """Reseta rotação da câmera"""
         self.camera_pitch = 0.0
         self.camera_yaw = 0.0

@@ -39,50 +39,81 @@ Controles:
 
 import sys
 import pygame
-from pygame.locals import *
+from pygame.locals import (
+    QUIT, KEYDOWN, VIDEORESIZE, DOUBLEBUF, OPENGL, RESIZABLE,
+    K_ESCAPE, K_r, K_t, K_m, K_n, K_RETURN, K_w, K_s, K_d, K_a,
+    K_SPACE, K_LSHIFT, K_RSHIFT, K_F11, K_p
+)
 from OpenGL.GLUT import glutInit
 
 # Importa módulos do jogo
-from config import *
+from config import (
+    WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE,
+    MOUSE_SENSITIVITY, PUSH_COOLDOWN, TARGET_FPS, MAX_FRAME_TIME,
+    GAME_STATE_MENU, GAME_STATE_PLAYING, GAME_STATE_WIN, GAME_STATE_FINAL_VICTORY,
+    PARTICLE_LIFETIME
+)
 from graphics.renderer import Renderer
 from game.player import Player
 from game.level import Level
 from game.levels_data import get_level_count
 from utils.sound import get_sound_manager
+from utils.logger import get_logger, cleanup_logging
+
+# Logger
+logger = get_logger(__name__)
 
 
 class GameState:
     """Gerenciador de estados do jogo"""
-    
+
+    PAUSED = 99  # Estado de pausa
+
     def __init__(self):
         self.state = GAME_STATE_MENU
         self.last_push_time = 0.0
         self.victory_time = 0.0
-    
+        self.paused = False
+
     def is_menu(self):
         return self.state == GAME_STATE_MENU
-    
+
     def is_playing(self):
-        return self.state == GAME_STATE_PLAYING
-    
+        return self.state == GAME_STATE_PLAYING and not self.paused
+
+    def is_paused(self):
+        return self.paused
+
     def is_victory(self):
         return self.state == GAME_STATE_WIN
-    
+
     def is_final_victory(self):
         return self.state == GAME_STATE_FINAL_VICTORY
-    
+
     def set_menu(self):
         self.state = GAME_STATE_MENU
-    
+        self.paused = False
+
     def set_playing(self):
         self.state = GAME_STATE_PLAYING
-    
+        self.paused = False
+
+    def toggle_pause(self):
+        """Alterna estado de pausa (apenas durante jogo)"""
+        if self.state == GAME_STATE_PLAYING:
+            self.paused = not self.paused
+            logger.info(f"Jogo {'pausado' if self.paused else 'despausado'}")
+            return self.paused
+        return False
+
     def set_victory(self, current_time):
         self.state = GAME_STATE_WIN
         self.victory_time = current_time
-    
+        self.paused = False
+
     def set_final_victory(self):
         self.state = GAME_STATE_FINAL_VICTORY
+        self.paused = False
 
 
 class Game:
@@ -90,118 +121,176 @@ class Game:
     
     def __init__(self):
         """Inicializa o jogo"""
+        logger.info("Inicializando BoxPush 3D...")
+
         # Inicializa Pygame
         pygame.init()
         glutInit(sys.argv)
-        
+
         # Inicializa sistema de som
         self.sound = get_sound_manager()
-        
+
         # Cria janela
         self.window_width = WINDOW_WIDTH
         self.window_height = WINDOW_HEIGHT
+        self.fullscreen = False
         pygame.display.set_caption(WINDOW_TITLE)
         pygame.display.set_mode(
             (self.window_width, self.window_height),
             DOUBLEBUF | OPENGL | RESIZABLE
         )
-        
+
+        logger.info(f"Janela criada: {self.window_width}x{self.window_height}")
+
         # Inicializa OpenGL
         Renderer.init_opengl()
         Renderer.set_perspective(self.window_width, self.window_height)
-        
+
         # Objetos do jogo
         self.player = Player()
         self.level = Level()
         self.game_state = GameState()
-        
+
         # Clock para FPS
         self.clock = pygame.time.Clock()
-        
+
         # Mouse
         pygame.event.set_grab(False)
         pygame.mouse.set_visible(True)
-        
+
         # Inicia música do menu
         self.sound.play_music('menu', is_menu=True)
+
+        logger.info("Inicialização completa!")
     
+    def toggle_fullscreen(self):
+        """Alterna entre modo janela e fullscreen"""
+        self.fullscreen = not self.fullscreen
+
+        if self.fullscreen:
+            pygame.display.set_mode((0, 0), DOUBLEBUF | OPENGL | pygame.FULLSCREEN)
+            logger.info("Modo fullscreen ativado")
+        else:
+            pygame.display.set_mode(
+                (self.window_width, self.window_height),
+                DOUBLEBUF | OPENGL | RESIZABLE
+            )
+            logger.info("Modo janela ativado")
+
+        # Reconfigura perspectiva
+        info = pygame.display.Info()
+        Renderer.set_perspective(info.current_w, info.current_h)
+
+    def _handle_global_keys(self, key):
+        """Trata teclas globais (funcionam em qualquer estado)"""
+        if key == K_ESCAPE:
+            logger.info("ESC pressionado - saindo...")
+            return False
+        elif key == K_F11:
+            self.toggle_fullscreen()
+        elif key == K_m:
+            self.sound.toggle_music()
+        elif key == K_n:
+            self.sound.toggle_sfx()
+        elif key == K_p and self.game_state.state == GAME_STATE_PLAYING:
+            # Pause apenas durante jogo
+            self.game_state.toggle_pause()
+            if self.game_state.is_paused():
+                pygame.event.set_grab(False)
+                pygame.mouse.set_visible(True)
+            else:
+                pygame.event.set_grab(True)
+                pygame.mouse.set_visible(False)
+        return True
+
+    def _handle_playing_keys(self, key):
+        """Trata teclas específicas do estado de jogo"""
+        if key == K_r:
+            # Reset nível
+            logger.info("Reiniciando nível...")
+            self.level.reload_current_level()
+            self.player.set_position(*self.level.spawn_position)
+            self.player.reset_camera()
+            self.sound.play_music(self.level.current_level_index)
+        elif key == K_t:
+            # Teleporte de emergência
+            logger.warning("Teleporte de emergência ativado")
+            self.player.set_position(*self.level.spawn_position)
+            self.player.reset_camera()
+
+    def _handle_menu_enter(self):
+        """Trata ENTER no menu - inicia jogo"""
+        self.sound.play('menu_select')
+        self.level.load_level(0)
+        self.player.set_position(*self.level.spawn_position)
+        self.player.reset_camera()
+        self.game_state.set_playing()
+        self.sound.play('level_start')
+        self.sound.play_music(0)
+        pygame.event.set_grab(True)
+        pygame.mouse.set_visible(False)
+        pygame.mouse.set_pos(
+            (self.window_width // 2, self.window_height // 2)
+        )
+        logger.info("Jogo iniciado - Nível 1")
+
+    def _handle_victory_enter(self):
+        """Trata ENTER na tela de vitória - próximo nível ou menu"""
+        self.sound.play('menu_select')
+        next_index = self.level.get_next_level_index()
+        if next_index is not None:
+            self.level.load_level(next_index)
+            self.player.set_position(*self.level.spawn_position)
+            self.player.reset_camera()
+            self.game_state.set_playing()
+            self.sound.play('level_start')
+            self.sound.play_music(next_index)
+            logger.info(f"Próximo nível: {next_index + 1}")
+        else:
+            self.game_state.set_menu()
+            self.sound.stop_music()
+            self.sound.play_music('menu', is_menu=True)
+            logger.info("Voltando ao menu")
+
+        pygame.event.set_grab(True)
+        pygame.mouse.set_visible(False)
+        pygame.mouse.set_pos(
+            (self.window_width // 2, self.window_height // 2)
+        )
+
+    def _handle_final_victory_enter(self):
+        """Trata ENTER na vitória final - volta ao menu"""
+        self.game_state.set_menu()
+        self.sound.stop_music()
+        self.sound.play_music('menu', is_menu=True)
+        pygame.event.set_grab(False)
+        pygame.mouse.set_visible(True)
+        logger.info("Jogo completo! Voltando ao menu")
+
     def handle_events(self):
         """Processa eventos do Pygame"""
         for event in pygame.event.get():
             if event.type == QUIT:
+                logger.info("Evento QUIT recebido")
                 return False
-            
+
             elif event.type == KEYDOWN:
-                # ESC sempre sai
-                if event.key == K_ESCAPE:
+                # Trata teclas globais primeiro
+                if not self._handle_global_keys(event.key):
                     return False
-                
-                # R: Reset nível (apenas durante jogo)
-                elif event.key == K_r and self.game_state.is_playing():
-                    self.level.reload_current_level()
-                    self.player.set_position(*self.level.spawn_position)
-                    self.player.reset_camera()
-                    # Reinicia música da fase atual
-                    self.sound.play_music(self.level.current_level_index)
-                
-                # T: Teleporte de emergência (caso fique preso na parede)
-                elif event.key == K_t and self.game_state.is_playing():
-                    self.player.set_position(*self.level.spawn_position)
-                    self.player.reset_camera()
-                
-                # M: Toggle música de fundo
-                elif event.key == K_m:
-                    self.sound.toggle_music()
-                
-                # N: Toggle sons de efeito
-                elif event.key == K_n:
-                    self.sound.toggle_sfx()
-                
+
+                # Teclas específicas do estado de jogo
+                elif self.game_state.state == GAME_STATE_PLAYING and not self.game_state.is_paused():
+                    self._handle_playing_keys(event.key)
+
                 # ENTER: Controle de fluxo
                 elif event.key == K_RETURN:
-                    self.sound.play('menu_select')
                     if self.game_state.is_menu():
-                        # Inicia jogo
-                        self.level.load_level(0)
-                        self.player.set_position(*self.level.spawn_position)
-                        self.player.reset_camera()
-                        self.game_state.set_playing()
-                        self.sound.play('level_start')
-                        self.sound.play_music(0)  # Música da fase 1
-                        pygame.event.set_grab(True)
-                        pygame.mouse.set_visible(False)
-                        pygame.mouse.set_pos(
-                            (self.window_width // 2, self.window_height // 2)
-                        )
-                    
+                        self._handle_menu_enter()
                     elif self.game_state.is_victory():
-                        # Próximo nível ou menu
-                        next_index = self.level.get_next_level_index()
-                        if next_index is not None:
-                            self.level.load_level(next_index)
-                            self.player.set_position(*self.level.spawn_position)
-                            self.player.reset_camera()
-                            self.game_state.set_playing()
-                            self.sound.play('level_start')
-                            self.sound.play_music(next_index)  # Música da próxima fase
-                        else:
-                            self.game_state.set_menu()
-                            self.sound.stop_music()
-                            self.sound.play_music('menu', is_menu=True)  # Volta música do menu
-                        
-                        pygame.event.set_grab(True)
-                        pygame.mouse.set_visible(False)
-                        pygame.mouse.set_pos(
-                            (self.window_width // 2, self.window_height // 2)
-                        )
-                    
+                        self._handle_victory_enter()
                     elif self.game_state.is_final_victory():
-                        # Volta ao menu
-                        self.game_state.set_menu()
-                        self.sound.stop_music()
-                        self.sound.play_music('menu', is_menu=True)  # Volta música do menu
-                        pygame.event.set_grab(False)
-                        pygame.mouse.set_visible(True)
+                        self._handle_final_victory_enter()
             
             elif event.type == VIDEORESIZE:
                 # Redimensionamento de janela
@@ -312,8 +401,11 @@ class Game:
             self.render(current_time)
         
         # Limpeza
+        logger.info("Encerrando jogo...")
         Renderer.cleanup()
+        cleanup_logging()
         pygame.quit()
+        logger.info("Jogo encerrado com sucesso")
 
 
 def main():

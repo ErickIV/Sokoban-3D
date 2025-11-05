@@ -36,9 +36,20 @@ ESTADOS VISUAIS DAS CAIXAS:
 """
 
 import math
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from config import *
+from OpenGL.GL import (
+    glEnable, glDisable, glCullFace, glBlendFunc, glHint, glClearColor,
+    glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
+    glTranslatef, glRotatef, glScalef, glColor4f, glBegin, glEnd, glVertex3f,
+    glClear, glViewport,
+    GL_DEPTH_TEST, GL_CULL_FACE, GL_BACK, GL_LINE_SMOOTH, GL_POINT_SMOOTH,
+    GL_NICEST, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+    GL_PROJECTION, GL_MODELVIEW, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT,
+    GL_LINES, GL_LINE_SMOOTH_HINT, GL_POINT_SMOOTH_HINT
+)
+from OpenGL.GLU import gluPerspective
+from config import (
+    FOV, NEAR_PLANE, FAR_PLANE, PLAYER_EYE_HEIGHT, SKY_COLOR
+)
 from .materials import Materials, Lighting
 from .primitives import Primitives
 from .ui import UI
