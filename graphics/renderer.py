@@ -39,16 +39,16 @@ import math
 from OpenGL.GL import (
     glEnable, glDisable, glCullFace, glBlendFunc, glHint, glClearColor,
     glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
-    glTranslatef, glRotatef, glScalef, glColor4f, glBegin, glEnd, glVertex3f,
+    glTranslatef, glRotatef, glScalef, glColor3f, glColor4f, glBegin, glEnd, glVertex3f,
     glClear, glViewport,
     GL_DEPTH_TEST, GL_CULL_FACE, GL_BACK, GL_LINE_SMOOTH, GL_POINT_SMOOTH,
     GL_NICEST, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
     GL_PROJECTION, GL_MODELVIEW, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT,
-    GL_LINES, GL_LINE_SMOOTH_HINT, GL_POINT_SMOOTH_HINT
+    GL_LINES, GL_QUADS, GL_LINE_SMOOTH_HINT, GL_POINT_SMOOTH_HINT, GL_LIGHTING
 )
 from OpenGL.GLU import gluPerspective
 from config import (
-    FOV, NEAR_PLANE, FAR_PLANE, PLAYER_EYE_HEIGHT, SKY_COLOR
+    FOV, NEAR_PLANE, FAR_PLANE, PLAYER_EYE_HEIGHT, SKY_COLOR, PARTICLE_LIFETIME, PARTICLE_COUNT
 )
 from .materials import Materials, Lighting
 from .primitives import Primitives
@@ -90,10 +90,13 @@ class Renderer:
     def set_perspective(width, height):
         """
         Configura matriz de projeção perspectiva.
-        
+
         Args:
             width, height: Dimensões da janela
         """
+        # Atualiza viewport para corresponder ao tamanho da janela
+        glViewport(0, 0, width, height)
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(FOV, width / float(height), NEAR_PLANE, FAR_PLANE)
@@ -243,15 +246,16 @@ class Renderer:
         glEnable(GL_LIGHTING)
     
     @staticmethod
-    def render_game_scene(level, player, current_time, sound_manager=None):
+    def render_game_scene(level, player, current_time, sound_manager=None, show_hints=True):
         """
         Renderiza cena principal do jogo.
-        
+
         Args:
             level: Objeto Level
             player: Objeto Player
             current_time: Tempo atual
             sound_manager: Gerenciador de som
+            show_hints: Mostrar hints de controles
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
@@ -284,7 +288,7 @@ class Renderer:
         
         # Desenha HUD
         stats = level.get_progress_stats()
-        UI.draw_hud(level.current_level_index, stats, sound_manager)
+        UI.draw_hud(level.current_level_index, stats, sound_manager, show_hints)
         UI.draw_crosshair()
     
     @staticmethod

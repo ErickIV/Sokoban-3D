@@ -6,11 +6,12 @@ Implementa materiais PBR-like para paredes, chão, caixas e objetivos.
 """
 
 from OpenGL.GL import (
-    glEnable, glLightfv, glLightModelfv, glMaterialfv, glMaterialf,
+    glEnable, glLightfv, glLightModelfv, glLightModeli, glMaterialfv, glMaterialf, glLightf,
     GL_LIGHTING, GL_LIGHT0, GL_LIGHT1, GL_LIGHT2,
     GL_POSITION, GL_DIFFUSE, GL_SPECULAR, GL_AMBIENT,
-    GL_LIGHT_MODEL_AMBIENT, GL_SHININESS,
-    GL_FRONT
+    GL_LIGHT_MODEL_AMBIENT, GL_LIGHT_MODEL_TWO_SIDE, GL_SHININESS,
+    GL_FRONT, GL_FRONT_AND_BACK, GL_TRUE,
+    GL_CONSTANT_ATTENUATION, GL_LINEAR_ATTENUATION, GL_QUADRATIC_ATTENUATION
 )
 
 

@@ -9,13 +9,15 @@ import math
 import time
 from OpenGL.GL import (
     glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
-    glColor3f, glColor4f, glBegin, glEnd, glVertex2f, glRasterPos2f,
-    glDisable, glEnable, glLineWidth,
-    GL_PROJECTION, GL_MODELVIEW, GL_DEPTH_TEST, GL_LINES, GL_LINE_LOOP
+    glColor3f, glColor4f, glBegin, glEnd, glVertex2f, glVertex3f, glRasterPos2f,
+    glDisable, glEnable, glLineWidth, glBlendFunc, glPointSize,
+    GL_PROJECTION, GL_MODELVIEW, GL_DEPTH_TEST, GL_LINES, GL_LINE_LOOP,
+    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_QUADS, GL_POINTS
 )
+from OpenGL.GL import glOrtho
 from OpenGL.GLU import gluOrtho2D
-from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18, GLUT_BITMAP_HELVETICA_12, glutBitmapCharacter
-from config import GAME_STATE_MENU
+from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18, GLUT_BITMAP_HELVETICA_12, GLUT_BITMAP_8_BY_13, glutBitmapCharacter
+from config import GAME_STATE_MENU, WINDOW_WIDTH, WINDOW_HEIGHT
 
 
 class UI:
@@ -112,54 +114,65 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
     
     @staticmethod
-    def draw_hud(level_index, stats, sound_manager=None):
+    def draw_hud(level_index, stats, sound_manager=None, show_hints=True):
         """
         Desenha HUD principal do jogo.
-        
+
         Args:
             level_index: Índice do nível atual
             stats: Dict com estatísticas (boxes_on_target, total_boxes, move_count)
             sound_manager: Gerenciador de som para mostrar status
+            show_hints: Se deve mostrar hints de controles (toggle com H)
         """
         y = WINDOW_HEIGHT - 36
-        
-        # Controles
-        UI.draw_text(20, y, 
-            "WASD: mover | SHIFT: correr | Mouse: olhar | Espaço: empurrar | R: reset | ESC: sair",
-            16)
-        
+
+        # Hints de controles (toggle com H)
+        if show_hints:
+            UI.draw_text(20, y,
+                "WASD: mover | SHIFT: correr | Mouse: olhar | ESPAÇO: empurrar",
+                16)
+            y -= 28
+            UI.draw_text(20, y,
+                "R: reset | P: pause | H: hints | F11: fullscreen | ESC: sair",
+                16)
+            y -= 32
+        else:
+            # Apenas indicador pequeno
+            UI.draw_text(20, y, "Pressione H para ver controles", 14)
+            y -= 32
+
         # Status do nível
-        y -= 32
         UI.draw_text(20, y,
             f"Level {level_index + 1} | Caixas: {stats['boxes_on_target']}/{stats['total_boxes']}",
             18)
-        
+
         # Movimentos
         y -= 32
         UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18)
-        
+
         # Status de áudio (canto superior direito)
         if sound_manager:
             audio_y = WINDOW_HEIGHT - 36
             audio_x = WINDOW_WIDTH - 150
-            
+
             # Status da música
             music_status = "🎵 ON" if sound_manager.music_enabled else "🔇 OFF"
             UI.draw_text(audio_x, audio_y, f"M: {music_status}", 16)
-            
+
             # Status dos sons
             audio_y -= 28
             sfx_status = "🔊 ON" if sound_manager.sfx_enabled else "🔇 OFF"
             UI.draw_text(audio_x, audio_y, f"N: {sfx_status}", 16)
-        
-        # Dicas
-        y -= 32
-        if stats['boxes_on_target'] == 0:
-            UI.draw_text(20, y, 
-                "Dica: Empurre as caixas para os X vermelhos!", 16)
-        elif stats['boxes_on_target'] < stats['total_boxes']:
-            UI.draw_text(20, y, 
-                "Continue empurrando as caixas restantes!", 16)
+
+        # Dicas de gameplay
+        if show_hints:
+            y -= 32
+            if stats['boxes_on_target'] == 0:
+                UI.draw_text(20, y,
+                    "Dica: Empurre as caixas para os X vermelhos!", 16)
+            elif stats['boxes_on_target'] < stats['total_boxes']:
+                UI.draw_text(20, y,
+                    "Continue empurrando as caixas restantes!", 16)
     
     @staticmethod
     def draw_victory_screen(move_count):

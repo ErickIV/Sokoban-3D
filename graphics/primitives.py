@@ -8,9 +8,12 @@ Inclui cubos, grama 3D com Display Lists, e outras formas básicas.
 import random
 import math
 from OpenGL.GL import (
-    glBegin, glEnd, glVertex3f, glNormal3f, glColor4f,
+    glBegin, glEnd, glVertex3f, glNormal3f, glColor3f, glColor4f,
     glGenLists, glNewList, glEndList, glCallList, glDeleteLists,
-    GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES
+    glEnable, glDisable, glBlendFunc,
+    glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef, glLineWidth,
+    GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN,
+    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 )
 from config import (
     GRASS_DENSITY, GRASS_AREA, GRASS_MIN_HEIGHT, GRASS_MAX_HEIGHT,

@@ -45,10 +45,11 @@ import math
 from OpenGL.GL import (
     glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef,
     glEnable, glDisable, glBlendFunc, glColor4f, glBegin, glEnd,
-    glTexCoord2f, glVertex3f, glGenTextures, glBindTexture,
+    glTexCoord2f, glVertex3f, glGenTextures, glBindTexture, glDeleteTextures,
     glTexParameteri, glTexImage2D, glDepthMask,
     GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DEPTH_TEST,
     GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE,
     GL_LINEAR, GL_RGBA, GL_UNSIGNED_BYTE, GL_QUADS, GL_TRUE, GL_FALSE
 )
 from OpenGL.GLU import gluLookAt

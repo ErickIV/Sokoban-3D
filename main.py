@@ -28,20 +28,23 @@ Controles:
 - WASD: Movimento
 - SHIFT: Correr
 - Mouse: Olhar ao redor
-- ESPAÇO: Empurrar caixa
+- ESPAÇO: Empurrar caixas
 - R: Reiniciar nível
-- M: Música ON/OFF
-- N: Sons ON/OFF
+- H: Toggle hints (mostrar/ocultar controles)
+- P: Pause
+- M: Toggle música
+- N: Toggle sons
+- F11: Fullscreen
 - T: Teleporte de emergência
-- ESC: Sair/Menu
 - ENTER: Avançar nível/Iniciar
+- ESC: Sair/Menu
 """
 
 import sys
 import pygame
 from pygame.locals import (
     QUIT, KEYDOWN, VIDEORESIZE, DOUBLEBUF, OPENGL, RESIZABLE,
-    K_ESCAPE, K_r, K_t, K_m, K_n, K_RETURN, K_w, K_s, K_d, K_a,
+    K_ESCAPE, K_r, K_t, K_m, K_n, K_h, K_RETURN, K_w, K_s, K_d, K_a,
     K_SPACE, K_LSHIFT, K_RSHIFT, K_F11, K_p
 )
 from OpenGL.GLUT import glutInit
@@ -158,6 +161,9 @@ class Game:
         pygame.event.set_grab(False)
         pygame.mouse.set_visible(True)
 
+        # UI
+        self.show_hints = True  # Toggle para mostrar/ocultar hints
+
         # Inicia música do menu
         self.sound.play_music('menu', is_menu=True)
 
@@ -168,18 +174,21 @@ class Game:
         self.fullscreen = not self.fullscreen
 
         if self.fullscreen:
-            pygame.display.set_mode((0, 0), DOUBLEBUF | OPENGL | pygame.FULLSCREEN)
-            logger.info("Modo fullscreen ativado")
+            # Pega resolução da tela antes de mudar para fullscreen
+            info = pygame.display.Info()
+            screen_w, screen_h = info.current_w, info.current_h
+            pygame.display.set_mode((screen_w, screen_h), DOUBLEBUF | OPENGL | pygame.FULLSCREEN)
+            logger.info(f"Modo fullscreen ativado: {screen_w}x{screen_h}")
+            # Atualiza viewport com resolução fullscreen
+            Renderer.set_perspective(screen_w, screen_h)
         else:
             pygame.display.set_mode(
                 (self.window_width, self.window_height),
                 DOUBLEBUF | OPENGL | RESIZABLE
             )
-            logger.info("Modo janela ativado")
-
-        # Reconfigura perspectiva
-        info = pygame.display.Info()
-        Renderer.set_perspective(info.current_w, info.current_h)
+            logger.info(f"Modo janela ativado: {self.window_width}x{self.window_height}")
+            # Restaura viewport para tamanho da janela
+            Renderer.set_perspective(self.window_width, self.window_height)
 
     def _handle_global_keys(self, key):
         """Trata teclas globais (funcionam em qualquer estado)"""
@@ -192,6 +201,10 @@ class Game:
             self.sound.toggle_music()
         elif key == K_n:
             self.sound.toggle_sfx()
+        elif key == K_h:
+            # Toggle hints
+            self.show_hints = not self.show_hints
+            logger.info(f"Hints {'ativados' if self.show_hints else 'desativados'}")
         elif key == K_p and self.game_state.state == GAME_STATE_PLAYING:
             # Pause apenas durante jogo
             self.game_state.toggle_pause()
@@ -366,18 +379,29 @@ class Game:
     
     def render(self, current_time):
         """Renderiza frame atual"""
+        # Garante que viewport está correto (fix para fullscreen/resize)
+        surface = pygame.display.get_surface()
+        current_w, current_h = surface.get_width(), surface.get_height()
+
+        # Só atualiza se o tamanho mudou
+        if current_w != self.window_width or current_h != self.window_height:
+            self.window_width = current_w
+            self.window_height = current_h
+            Renderer.set_perspective(current_w, current_h)
+            logger.info(f"Viewport atualizado: {current_w}x{current_h}")
+
         if self.game_state.is_menu():
             Renderer.render_menu(self.sound)
-        
+
         elif self.game_state.is_playing():
-            Renderer.render_game_scene(self.level, self.player, current_time, self.sound)
-        
+            Renderer.render_game_scene(self.level, self.player, current_time, self.sound, self.show_hints)
+
         elif self.game_state.is_victory():
             Renderer.render_victory(self.level, self.player, current_time)
-        
+
         elif self.game_state.is_final_victory():
             Renderer.render_final_victory()
-        
+
         pygame.display.flip()
     
     def run(self):

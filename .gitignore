@@ -36,3 +36,6 @@ desktop.ini
 
 # PyOpenGL
 *.pyc
+
+# Claude Code
+.claude/
