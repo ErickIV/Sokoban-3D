@@ -114,7 +114,7 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
     
     @staticmethod
-    def draw_hud(level_index, stats, sound_manager=None, show_hints=True):
+    def draw_hud(level_index, stats, sound_manager=None, show_hints=True, perf_stats=None):
         """
         Desenha HUD principal do jogo.
 
@@ -123,6 +123,7 @@ class UI:
             stats: Dict com estatísticas (boxes_on_target, total_boxes, move_count)
             sound_manager: Gerenciador de som para mostrar status
             show_hints: Se deve mostrar hints de controles (toggle com H)
+            perf_stats: Estatísticas de performance (FPS, frame time, etc)
         """
         y = WINDOW_HEIGHT - 36
 
@@ -149,6 +150,27 @@ class UI:
         # Movimentos
         y -= 32
         UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18)
+
+        # FPS counter (se disponível)
+        if perf_stats:
+            y -= 32
+            fps = perf_stats.get('fps', 0.0)
+            frame_time = perf_stats.get('frame_time_ms', 0.0)
+
+            # Cor baseada em performance
+            if fps >= 90:
+                fps_color = (0.2, 1.0, 0.2)  # Verde (excelente)
+            elif fps >= 60:
+                fps_color = (1.0, 1.0, 0.2)  # Amarelo (bom)
+            elif fps >= 30:
+                fps_color = (1.0, 0.6, 0.2)  # Laranja (razoável)
+            else:
+                fps_color = (1.0, 0.2, 0.2)  # Vermelho (ruim)
+
+            # Desenha FPS com cor apropriada
+            glColor3f(*fps_color)
+            UI.draw_text(20, y, f"FPS: {fps:.1f} ({frame_time:.1f}ms)", 16)
+            glColor3f(1.0, 1.0, 1.0)  # Restaura cor branca
 
         # Status de áudio (canto superior direito)
         if sound_manager:
