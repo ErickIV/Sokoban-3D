@@ -13,7 +13,7 @@ from OpenGL.GL import (
     glEnable, glDisable, glBlendFunc,
     glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef, glLineWidth,
     GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN,
-    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE
 )
 from config import (
     GRASS_DENSITY, GRASS_AREA, GRASS_MIN_HEIGHT, GRASS_MAX_HEIGHT,
