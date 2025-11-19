@@ -98,32 +98,46 @@ class Cloud:
 class CloudSystem:
     """Sistema de gerenciamento de nuvens"""
     
-    def __init__(self, num_clouds=12, wind_speed=0.5):
+    def __init__(self, num_clouds=40, wind_speed=0.5):
         """
-        Inicializa o sistema de nuvens
-        
+        Inicializa o sistema de nuvens ESPALHADAS PELO CÉU
+
         Args:
-            num_clouds: Quantidade de nuvens no céu
+            num_clouds: Quantidade de nuvens no céu (padrão 40 para céu mais cheio)
             wind_speed: Velocidade base do vento
         """
         self.clouds = []
         self.wind_speed = wind_speed
         self.texture_id = None
         self.total_time = 0.0  # Tempo acumulado para animação
-        
-        # Gera nuvens distribuídas em círculo (360°)
+
+        # Gera nuvens ESPALHADAS EM DIFERENTES CAMADAS do céu
         for i in range(num_clouds):
             # Distribuição em anel ao redor do jogador
             angle = (i / num_clouds) * 2 * math.pi
-            radius = random.uniform(25, 40)  # Distância do centro
-            
+
+            # Varia o raio para criar múltiplas camadas de profundidade
+            if i < num_clouds // 3:
+                # Camada próxima (nuvens grandes e baixas)
+                radius = random.uniform(20, 30)
+                y = random.uniform(8, 12)  # Baixas
+                size = random.uniform(6, 10)  # Grandes
+            elif i < 2 * num_clouds // 3:
+                # Camada média (nuvens médias)
+                radius = random.uniform(30, 45)
+                y = random.uniform(12, 18)  # Médias
+                size = random.uniform(4, 7)  # Médias
+            else:
+                # Camada distante (nuvens pequenas e altas)
+                radius = random.uniform(45, 60)
+                y = random.uniform(18, 25)  # Altas
+                size = random.uniform(3, 5)  # Pequenas
+
             x = math.cos(angle) * radius
             z = math.sin(angle) * radius
-            y = random.uniform(12, 18)  # Altura no céu
-            
-            size = random.uniform(4, 8)
+
             speed = random.uniform(0.5, 1.2)
-            
+
             self.clouds.append(Cloud(x, y, z, size, speed))
         
         # Cria textura procedimental
