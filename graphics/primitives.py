@@ -177,37 +177,79 @@ class Primitives:
     @staticmethod
     def draw_target_marker(x, y, z):
         """
-        Desenha marcador de objetivo (círculo + X).
-        
+        Desenha marcador de objetivo (círculo + X) com GLOW PULSANTE.
+
         Args:
             x, y, z: Posição do objetivo
         """
+        import time
+
         glPushMatrix()
         glTranslatef(x, y - 0.95, z)
         glDisable(GL_LIGHTING)
-        
-        # Círculo azul
-        glColor3f(0.1, 0.7, 1.0)
+
+        # Efeito de pulsação (respira entre 0.7 e 1.0)
+        pulse = 0.85 + 0.15 * math.sin(time.time() * 2.5)
+
+        # === GLOW LAYER 1 (mais externo, muito transparente) ===
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE)  # Additive blending para glow
+
+        glColor4f(0.3, 0.8, 1.0, 0.15 * pulse)
+        glBegin(GL_TRIANGLE_FAN)
+        glVertex3f(0, 0, 0)
+        radius_outer = 0.55
+        for i in range(0, 361, 12):
+            angle = math.radians(i)
+            glVertex3f(math.cos(angle) * radius_outer, 0, math.sin(angle) * radius_outer)
+        glEnd()
+
+        # === GLOW LAYER 2 (médio) ===
+        glColor4f(0.2, 0.75, 1.0, 0.3 * pulse)
+        glBegin(GL_TRIANGLE_FAN)
+        glVertex3f(0, 0, 0)
+        radius_mid = 0.45
+        for i in range(0, 361, 12):
+            angle = math.radians(i)
+            glVertex3f(math.cos(angle) * radius_mid, 0, math.sin(angle) * radius_mid)
+        glEnd()
+
+        # === CÍRCULO AZUL BASE ===
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(0.1, 0.7, 1.0, 0.9)
         glBegin(GL_TRIANGLE_FAN)
         glVertex3f(0, 0, 0)
         radius = 0.35
-        
         for i in range(0, 361, 12):
             angle = math.radians(i)
             glVertex3f(math.cos(angle) * radius, 0, math.sin(angle) * radius)
         glEnd()
-        
-        # X vermelho
-        glColor3f(1.0, 0.0, 0.0)
-        glLineWidth(6.0)
+
+        # === X VERMELHO COM GLOW ===
+        # Glow do X (additive)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+        glColor4f(1.0, 0.3, 0.3, 0.4 * pulse)
+        glLineWidth(12.0)
+        glBegin(GL_LINES)
+        glVertex3f(-0.28, 0.01, -0.28)
+        glVertex3f(0.28, 0.01, 0.28)
+        glVertex3f(0.28, 0.01, -0.28)
+        glVertex3f(-0.28, 0.01, 0.28)
+        glEnd()
+
+        # X principal
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(1.0, 0.0, 0.0, 1.0)
+        glLineWidth(7.0)
         glBegin(GL_LINES)
         glVertex3f(-0.25, 0.01, -0.25)
         glVertex3f(0.25, 0.01, 0.25)
         glVertex3f(0.25, 0.01, -0.25)
         glVertex3f(-0.25, 0.01, 0.25)
         glEnd()
+
         glLineWidth(1.0)
-        
+        glDisable(GL_BLEND)
         glEnable(GL_LIGHTING)
         glPopMatrix()
     

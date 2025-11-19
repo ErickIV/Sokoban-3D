@@ -57,12 +57,12 @@ class Materials:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,
                     (base_r, base_g, base_b, 1.0))
 
-        # Specular sutil (pedra tem leve brilho)
+        # Specular moderado (pedra polida tem reflexos)
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,
-                    (0.15, 0.15, 0.14, 1.0))
+                    (0.3, 0.3, 0.28, 1.0))
 
-        # Shininess variável (simula rugosidade diferente)
-        shininess = 6.0 + abs(variation) * 8.0
+        # Shininess variável (simula rugosidade diferente, mais polida)
+        shininess = 15.0 + abs(variation) * 12.0
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
     
     @staticmethod
@@ -90,20 +90,23 @@ class Materials:
     
     @staticmethod
     def apply_box_material(color: Tuple[float, float, float, float],
-                          shininess: float = 32.0) -> None:
+                          shininess: float = 64.0) -> None:
         """
-        Material para caixas com cor personalizável.
+        Material para caixas com cor personalizável e ALTO BRILHO REFLEXIVO.
+
+        Simula caixas de madeira polida/metal com reflexos especulares intensos.
 
         Args:
             color: Cor RGBA da caixa (valores 0.0-1.0)
-            shininess: Brilho especular (0.0-128.0, padrão 32.0)
+            shininess: Brilho especular (0.0-128.0, padrão 64.0 para alto brilho)
         """
         # Ambient mais escuro para melhor contraste
-        ambient = [c * 0.5 for c in color[:3]] + [1.0]
-        
+        ambient = [c * 0.4 for c in color[:3]] + [1.0]
+
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient)
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (0.5, 0.5, 0.5, 1.0))
+        # Specular MUITO ALTO para reflexos intensos (quase como metal polido)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (0.9, 0.9, 0.9, 1.0))
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
 
@@ -140,12 +143,12 @@ class Lighting:
             pass  # Se não disponível, ignora
 
         # === LUZ PRINCIPAL (Sol) - LIGHT0 ===
-        # Simula luz solar direta - quente, brilhante, amarela
+        # Simula luz solar direta - quente, SUPER brilhante, dramática
         glEnable(GL_LIGHT0)
         glLightfv(GL_LIGHT0, GL_POSITION, (20.0, 30.0, 15.0, 1.0))  # Posição elevada
-        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.25, 0.24, 0.22, 1.0))   # Ambient quente
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.0, 0.95, 0.8, 1.0))     # Amarelo sol intenso
-        glLightfv(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 0.9, 1.0))     # Specular brilhante
+        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.3, 0.29, 0.26, 1.0))    # Ambient quente mais intenso
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.2, 1.15, 0.95, 1.0))    # Amarelo SUPER intenso
+        glLightfv(GL_LIGHT0, GL_SPECULAR, (1.5, 1.5, 1.4, 1.0))     # Specular ULTRA brilhante
 
         # Atenuação suave (sol é distante, atenua pouco)
         glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.8)
@@ -153,12 +156,12 @@ class Lighting:
         glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0001)
 
         # === LUZ DE PREENCHIMENTO (Céu) - LIGHT1 ===
-        # Simula luz difusa vinda do céu azul - fria, suave
+        # Simula luz difusa vinda do céu azul - fria, mais intensa
         glEnable(GL_LIGHT1)
         glLightfv(GL_LIGHT1, GL_POSITION, (-15.0, 18.0, -12.0, 1.0))
-        glLightfv(GL_LIGHT1, GL_AMBIENT, (0.18, 0.20, 0.25, 1.0))   # Ambient azulado
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, (0.5, 0.6, 0.75, 1.0))     # Azul céu
-        glLightfv(GL_LIGHT1, GL_SPECULAR, (0.3, 0.35, 0.45, 1.0))   # Specular frio
+        glLightfv(GL_LIGHT1, GL_AMBIENT, (0.22, 0.24, 0.30, 1.0))   # Ambient azulado mais forte
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, (0.65, 0.75, 0.95, 1.0))   # Azul céu vibrante
+        glLightfv(GL_LIGHT1, GL_SPECULAR, (0.5, 0.6, 0.75, 1.0))    # Specular frio mais brilhante
 
         # Atenuação média
         glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0)
@@ -166,12 +169,12 @@ class Lighting:
         glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0005)
 
         # === LUZ DE CONTORNO (Bounce Light) - LIGHT2 ===
-        # Simula luz refletida do chão - adiciona profundidade
+        # Simula luz refletida do chão - adiciona profundidade dramática
         glEnable(GL_LIGHT2)
         glLightfv(GL_LIGHT2, GL_POSITION, (5.0, 10.0, -20.0, 1.0))
-        glLightfv(GL_LIGHT2, GL_AMBIENT, (0.12, 0.14, 0.16, 1.0))
-        glLightfv(GL_LIGHT2, GL_DIFFUSE, (0.4, 0.45, 0.5, 1.0))     # Cinza-azulado
-        glLightfv(GL_LIGHT2, GL_SPECULAR, (0.5, 0.55, 0.6, 1.0))    # Specular médio
+        glLightfv(GL_LIGHT2, GL_AMBIENT, (0.15, 0.17, 0.20, 1.0))
+        glLightfv(GL_LIGHT2, GL_DIFFUSE, (0.55, 0.60, 0.70, 1.0))   # Cinza-azulado mais forte
+        glLightfv(GL_LIGHT2, GL_SPECULAR, (0.75, 0.80, 0.90, 1.0))  # Specular forte
 
         # Atenuação moderada
         glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1.0)
