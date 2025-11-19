@@ -22,16 +22,17 @@ from config import GAME_STATE_MENU, WINDOW_WIDTH, WINDOW_HEIGHT
 
 class UI:
     """Gerenciador de interface do usuário"""
-    
+
     @staticmethod
-    def draw_text(x, y, text, size=18):
+    def draw_text(x, y, text, size=18, color=(1.0, 1.0, 1.0)):
         """
-        Desenha texto 2D na tela com sombra.
-        
+        Desenha texto 2D com outline grosso para máxima legibilidade.
+
         Args:
             x, y: Posição na tela
             text: Texto a ser desenhado
             size: Tamanho da fonte
+            color: Cor RGB do texto (padrão: branco)
         """
         glMatrixMode(GL_PROJECTION)
         glPushMatrix()
@@ -40,26 +41,34 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
-        
+
         glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
-        
-        # Sombra (preto)
-        glColor3f(0.0, 0.0, 0.0)
-        glRasterPos2f(x + 1, y - 1)
+
         font = GLUT_BITMAP_HELVETICA_18 if size >= 18 else GLUT_BITMAP_8_BY_13
-        for ch in text:
-            glutBitmapCharacter(font, ord(ch))
-        
-        # Texto (branco)
-        glColor3f(1.0, 1.0, 1.0)
+
+        # Outline grosso preto em 8 direções (3 pixels de raio)
+        glColor3f(0.0, 0.0, 0.0)
+        offsets = [
+            (-3, 0), (3, 0), (0, -3), (0, 3),  # Cardeal
+            (-2, -2), (-2, 2), (2, -2), (2, 2),  # Diagonal
+            (-3, -3), (-3, 3), (3, -3), (3, 3),  # Diagonal externo
+        ]
+
+        for dx, dy in offsets:
+            glRasterPos2f(x + dx, y + dy)
+            for ch in text:
+                glutBitmapCharacter(font, ord(ch))
+
+        # Texto principal com cor vibrante
+        glColor3f(*color)
         glRasterPos2f(x, y)
         for ch in text:
             glutBitmapCharacter(font, ord(ch))
-        
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
-        
+
         glPopMatrix()
         glMatrixMode(GL_PROJECTION)
         glPopMatrix()
@@ -116,7 +125,7 @@ class UI:
     @staticmethod
     def draw_hud(level_index, stats, sound_manager=None, show_hints=True, perf_stats=None):
         """
-        Desenha HUD principal do jogo.
+        Desenha HUD principal do jogo com cores de alto contraste.
 
         Args:
             level_index: Índice do nível atual
@@ -127,29 +136,28 @@ class UI:
         """
         y = WINDOW_HEIGHT - 36
 
-        # Hints de controles (toggle com H)
+        # === HINTS DE CONTROLES ===
         if show_hints:
             UI.draw_text(20, y,
-                "WASD: mover | SHIFT: correr | Mouse: olhar | ESPAÇO: empurrar",
-                16)
+                "WASD: mover | SHIFT: correr | Mouse: olhar | ESPACO: empurrar",
+                16, color=(0.9, 0.95, 1.0))
             y -= 28
             UI.draw_text(20, y,
                 "R: reset | P: pause | H: hints | F11: fullscreen | ESC: sair",
-                16)
+                16, color=(0.9, 0.95, 1.0))
             y -= 32
         else:
-            # Apenas indicador pequeno
-            UI.draw_text(20, y, "Pressione H para ver controles", 14)
+            UI.draw_text(20, y, "Pressione H para ver controles", 14, color=(1.0, 1.0, 0.7))
             y -= 32
 
-        # Status do nível
+        # === STATUS DO NÍVEL ===
         UI.draw_text(20, y,
             f"Level {level_index + 1} | Caixas: {stats['boxes_on_target']}/{stats['total_boxes']}",
-            18)
+            18, color=(1.0, 0.95, 0.5))
 
         # Movimentos
         y -= 32
-        UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18)
+        UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18, color=(0.95, 1.0, 0.95))
 
         # FPS counter (se disponível)
         if perf_stats:
@@ -157,51 +165,50 @@ class UI:
             fps = perf_stats.get('fps', 0.0)
             frame_time = perf_stats.get('frame_time_ms', 0.0)
 
-            # Cor baseada em performance
+            # Cor baseada em performance (mais saturadas)
             if fps >= 90:
-                fps_color = (0.2, 1.0, 0.2)  # Verde (excelente)
+                fps_color = (0.5, 1.0, 0.5)  # Verde vibrante (excelente)
             elif fps >= 60:
-                fps_color = (1.0, 1.0, 0.2)  # Amarelo (bom)
+                fps_color = (1.0, 1.0, 0.5)  # Amarelo vibrante (bom)
             elif fps >= 30:
-                fps_color = (1.0, 0.6, 0.2)  # Laranja (razoável)
+                fps_color = (1.0, 0.7, 0.4)  # Laranja (razoável)
             else:
-                fps_color = (1.0, 0.2, 0.2)  # Vermelho (ruim)
+                fps_color = (1.0, 0.4, 0.4)  # Vermelho (ruim)
 
-            # Desenha FPS com cor apropriada
-            glColor3f(*fps_color)
-            UI.draw_text(20, y, f"FPS: {fps:.1f} ({frame_time:.1f}ms)", 16)
-            glColor3f(1.0, 1.0, 1.0)  # Restaura cor branca
+            UI.draw_text(20, y, f"FPS: {fps:.1f} ({frame_time:.1f}ms)", 16, color=fps_color)
 
-        # Status de áudio (canto superior direito)
+        # === STATUS DE ÁUDIO (canto superior direito) ===
         if sound_manager:
             audio_y = WINDOW_HEIGHT - 36
-            audio_x = WINDOW_WIDTH - 150
+            audio_x = WINDOW_WIDTH - 160
 
             # Status da música
             music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
-            UI.draw_text(audio_x, audio_y, f"Music: {music_status}", 16)
+            music_color = (0.6, 1.0, 0.6) if sound_manager.music_enabled else (1.0, 0.5, 0.5)
+            UI.draw_text(audio_x, audio_y, f"Music: {music_status}", 16, color=music_color)
 
             # Status dos sons
             audio_y -= 28
             sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
-            UI.draw_text(audio_x, audio_y, f"Sound: {sfx_status}", 16)
+            sfx_color = (0.6, 1.0, 0.6) if sound_manager.sfx_enabled else (1.0, 0.5, 0.5)
+            UI.draw_text(audio_x, audio_y, f"Sound: {sfx_status}", 16, color=sfx_color)
 
-        # Dicas de gameplay
+        # === DICAS DE GAMEPLAY ===
         if show_hints:
             y -= 32
             if stats['boxes_on_target'] == 0:
                 UI.draw_text(20, y,
-                    "Dica: Empurre as caixas para os X vermelhos!", 16)
+                    "Dica: Empurre as caixas para os X vermelhos!", 16, color=(0.7, 1.0, 0.7))
             elif stats['boxes_on_target'] < stats['total_boxes']:
                 UI.draw_text(20, y,
-                    "Continue empurrando as caixas restantes!", 16)
+                    "Continue empurrando as caixas restantes!", 16, color=(0.7, 1.0, 0.7))
     
     @staticmethod
     def draw_victory_screen(move_count):
-        """Desenha tela de vitória de nível"""
+        """Desenha tela de vitória de nível com overlay e texto de alto contraste"""
         glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
-        
+
         glMatrixMode(GL_PROJECTION)
         glPushMatrix()
         glLoadIdentity()
@@ -209,33 +216,33 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
-        
+
         # Overlay verde semi-transparente
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glColor4f(0.0, 0.8, 0.0, 0.7)
-        
+        glColor4f(0.0, 0.3, 0.0, 0.6)
+
         glBegin(GL_QUADS)
         glVertex2f(0, 0)
         glVertex2f(WINDOW_WIDTH, 0)
         glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT)
         glVertex2f(0, WINDOW_HEIGHT)
         glEnd()
-        
+
         glDisable(GL_BLEND)
-        
-        # Texto
+
+        # Texto com cores vibrantes
         cx = WINDOW_WIDTH // 2
         cy = WINDOW_HEIGHT // 2
-        
-        UI.draw_text(cx - 100, cy + 50, "PARABÉNS! LEVEL COMPLETO!", 24)
-        UI.draw_text(cx - 80, cy, f"Movimentos: {move_count}", 18)
-        UI.draw_text(cx - 180, cy - 50, 
-            "Pressione ENTER para o Próximo Level / ESC para sair", 18)
-        
+
+        UI.draw_text(cx - 140, cy + 50, "PARABENS! LEVEL COMPLETO!", 24, color=(1.0, 1.0, 0.4))
+        UI.draw_text(cx - 80, cy, f"Movimentos: {move_count}", 18, color=(0.9, 1.0, 0.9))
+        UI.draw_text(cx - 250, cy - 50,
+            "Pressione ENTER para o Proximo Level / ESC para sair", 18, color=(1.0, 1.0, 1.0))
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
-        
+
         glPopMatrix()
         glMatrixMode(GL_PROJECTION)
         glPopMatrix()
@@ -318,18 +325,18 @@ class UI:
     @staticmethod
     def draw_menu(sound_manager=None):
         """
-        Desenha menu principal
-        
+        Desenha menu principal com overlay e texto de alto contraste
+
         Args:
             sound_manager: Gerenciador de som para mostrar status
         """
         cx = WINDOW_WIDTH // 2
         cy = WINDOW_HEIGHT // 2
-        
+
         # Overlay escuro
         glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
-        
+
         glMatrixMode(GL_PROJECTION)
         glPushMatrix()
         glLoadIdentity()
@@ -337,47 +344,53 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
-        
+
+        # Overlay escuro semi-transparente
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glColor4f(0.0, 0.0, 0.0, 0.6)
-        
+        glColor4f(0.0, 0.0, 0.0, 0.65)
+
         glBegin(GL_QUADS)
         glVertex2f(0, cy + 180)
         glVertex2f(WINDOW_WIDTH, cy + 180)
         glVertex2f(WINDOW_WIDTH, cy - 150)
         glVertex2f(0, cy - 150)
         glEnd()
-        
+
         glDisable(GL_BLEND)
-        
-        # Textos do menu
-        UI.draw_text(cx - 160, cy + 120, "🎮 BOXPUSH 3D SOKOBAN 🎮", 24)
-        UI.draw_text(cx - 120, cy + 80, 
-            "Empurre as caixas para os objetivos!", 18)
-        UI.draw_text(cx - 80, cy + 50, "🎯 5 NÍVEIS DESAFIADORES 🎯", 16)
-        
-        UI.draw_text(cx - 100, cy + 10, "⏎ ENTER - Começar Jogo", 18)
-        UI.draw_text(cx - 60, cy - 20, "⎋ ESC - Sair", 18)
-        
-        UI.draw_text(cx - 180, cy - 60, 
-            "Controles: WASD=Mover | SHIFT=Correr | Mouse=Olhar | Espaço=Empurrar", 
-            14)
-        UI.draw_text(cx - 120, cy - 85, 
-            "M=Música ON/OFF | N=Sons ON/OFF | R=Reiniciar", 
-            14)
-        
-        # Status de áudio
+
+        # Textos do menu com cores vibrantes
+        UI.draw_text(cx - 160, cy + 120, "BOXPUSH 3D SOKOBAN", 24, color=(1.0, 0.95, 0.4))
+        UI.draw_text(cx - 180, cy + 80,
+            "Empurre as caixas para os objetivos!", 18, color=(0.9, 1.0, 0.9))
+        UI.draw_text(cx - 120, cy + 50, "5 NIVEIS DESAFIADORES", 16, color=(1.0, 0.85, 0.4))
+
+        UI.draw_text(cx - 100, cy + 10, "ENTER - Comecar Jogo", 18, color=(0.6, 1.0, 0.6))
+        UI.draw_text(cx - 60, cy - 20, "ESC - Sair", 18, color=(1.0, 0.6, 0.6))
+
+        UI.draw_text(cx - 280, cy - 60,
+            "Controles: WASD=Mover | SHIFT=Correr | Mouse=Olhar | Espaco=Empurrar",
+            14, color=(0.85, 0.95, 1.0))
+        UI.draw_text(cx - 180, cy - 85,
+            "M=Musica ON/OFF | N=Sons ON/OFF | R=Reiniciar",
+            14, color=(0.85, 0.95, 1.0))
+
+        # Status de áudio com cores indicativas
         if sound_manager:
             audio_y = cy - 120
             music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
             sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
+
+            music_color = (0.6, 1.0, 0.6) if sound_manager.music_enabled else (1.0, 0.6, 0.6)
+            sfx_color = (0.6, 1.0, 0.6) if sound_manager.sfx_enabled else (1.0, 0.6, 0.6)
+
+            # Desenha com cores combinadas
             UI.draw_text(cx - 100, audio_y,
-                f"Music: {music_status} | Sound: {sfx_status}", 16)
-        
+                f"Music: {music_status} | Sound: {sfx_status}", 16, color=(1.0, 1.0, 0.8))
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
-        
+
         glPopMatrix()
         glMatrixMode(GL_PROJECTION)
         glPopMatrix()
