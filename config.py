@@ -122,12 +122,12 @@ SHADOW_OFFSET_Y = 0.01          # Offset Y para evitar z-fighting
 # -----------------------------
 # Configurações de Nuvens
 # -----------------------------
-CLOUD_COUNT = 25                # Número de nuvens no céu
+CLOUD_COUNT = 40                # Número de nuvens no céu (aumentado para céu mais cheio)
 CLOUD_MIN_SIZE = 3.0            # Tamanho mínimo das nuvens
 CLOUD_MAX_SIZE = 8.0            # Tamanho máximo das nuvens
 CLOUD_HEIGHT_MIN = 15.0         # Altura mínima das nuvens
 CLOUD_HEIGHT_MAX = 25.0         # Altura máxima das nuvens
-CLOUD_WIND_SPEED = 0.5          # Velocidade do vento
+CLOUD_WIND_SPEED = 1.2          # Velocidade do vento (aumentado para movimento mais visível)
 CLOUD_OPACITY = 0.85            # Opacidade das nuvens
 
 # -----------------------------

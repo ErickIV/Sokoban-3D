@@ -307,9 +307,27 @@ class Level:
         # Som de empurrar
         get_sound_manager().play('push')
         
-        # Cria partículas e som se atingiu objetivo
+        # Cria partículas espetaculares e som se atingiu objetivo
         if dest_pos in self.objectives:
-            self.particles.append((dest_pos[0], dest_pos[1], dest_pos[2], current_time))
+            # Explosão de partículas coloridas e variadas!
+            import random
+            num_particles = 15  # Mais partículas para efeito espetacular
+
+            for i in range(num_particles):
+                # Posições variadas ao redor da caixa
+                offset_x = random.uniform(-0.5, 0.5)
+                offset_y = random.uniform(0.0, 0.8)
+                offset_z = random.uniform(-0.5, 0.5)
+
+                particle_x = dest_pos[0] + offset_x
+                particle_y = dest_pos[1] + offset_y
+                particle_z = dest_pos[2] + offset_z
+
+                # Tempo ligeiramente diferente para cada partícula (efeito cascata)
+                particle_time = current_time + (i * 0.02)
+
+                self.particles.append((particle_x, particle_y, particle_z, particle_time))
+
             get_sound_manager().play('box_on_target')
         
         return True
