@@ -62,6 +62,7 @@ from game.level import Level
 from game.levels_data import get_level_count
 from utils.sound import get_sound_manager
 from utils.logger import get_logger, cleanup_logging
+from utils.performance import get_performance_monitor
 
 # Logger
 logger = get_logger(__name__)
@@ -166,6 +167,10 @@ class Game:
 
         # Inicia música do menu
         self.sound.play_music('menu', is_menu=True)
+
+        # Monitor de performance
+        self.perf_monitor = get_performance_monitor()
+        self.show_fps = True  # Mostrar FPS no HUD
 
         logger.info("Inicialização completa!")
     
@@ -407,23 +412,35 @@ class Game:
     def run(self):
         """Loop principal do jogo"""
         running = True
-        
+
         while running:
+            # Marca início do frame para métricas de performance
+            self.perf_monitor.frame_start()
+
             # Tempo
             dt_ms = self.clock.tick(TARGET_FPS)
             dt = min(dt_ms / 1000.0, MAX_FRAME_TIME)
             current_time = pygame.time.get_ticks() / 1000.0
-            
+
             # Eventos
             running = self.handle_events()
-            
+
             # Atualização
             if self.game_state.is_playing():
                 self.update_playing(dt, current_time)
-            
+
             # Renderização
             self.render(current_time)
-        
+
+            # Marca fim do frame
+            self.perf_monitor.frame_end()
+
+        # Log de estatísticas finais de performance
+        stats = self.perf_monitor.get_stats()
+        logger.info(f"Performance final - FPS médio: {stats['fps']:.1f}, "
+                   f"Total frames: {stats['total_frames']}, "
+                   f"Lag spikes: {stats['lag_spikes']}")
+
         # Limpeza
         logger.info("Encerrando jogo...")
         Renderer.cleanup()

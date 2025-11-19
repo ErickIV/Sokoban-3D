@@ -5,6 +5,7 @@ Definições de materiais e sistema de iluminação profissional.
 Implementa materiais PBR-like para paredes, chão, caixas e objetivos.
 """
 
+from typing import Tuple
 from OpenGL.GL import (
     glEnable, glLightfv, glLightModelfv, glLightModeli, glMaterialfv, glMaterialf, glLightf,
     GL_LIGHTING, GL_LIGHT0, GL_LIGHT1, GL_LIGHT2,
@@ -19,14 +20,14 @@ class Materials:
     """Gerenciador de materiais do jogo"""
     
     @staticmethod
-    def apply_wall_material_varied(x, z):
+    def apply_wall_material_varied(x: float, z: float) -> None:
         """
         Material de parede com variações procedurais baseadas na posição.
         Simula concreto com irregularidades naturais.
-        
+
         Args:
-            x (float): Posição X da parede
-            z (float): Posição Z da parede
+            x: Posição X da parede (usada para seed de variação)
+            z: Posição Z da parede (usada para seed de variação)
         """
         variation = (abs(x * 0.1) + abs(z * 0.1)) % 0.3 - 0.15
         base_color = 0.6 + variation * 0.1
@@ -42,29 +43,30 @@ class Materials:
                    4.0 + variation * 2.0)
     
     @staticmethod
-    def apply_wall_material():
-        """Material padrão para paredes (concreto)"""
+    def apply_wall_material() -> None:
+        """Material padrão para paredes (concreto sem variação)"""
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, (0.15, 0.15, 0.16, 1.0))
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0.6, 0.6, 0.62, 1.0))
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (0.1, 0.1, 0.1, 1.0))
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 4.0)
     
     @staticmethod
-    def apply_floor_material():
-        """Material para o chão (grama realista)"""
+    def apply_floor_material() -> None:
+        """Material para o chão (grama realista com propriedades especulares)"""
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, (0.1, 0.4, 0.1, 1.0))
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0.2, 0.8, 0.2, 1.0))
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (0.1, 0.3, 0.1, 1.0))
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 16.0)
     
     @staticmethod
-    def apply_box_material(color, shininess=32.0):
+    def apply_box_material(color: Tuple[float, float, float, float],
+                          shininess: float = 32.0) -> None:
         """
         Material para caixas com cor personalizável.
-        
+
         Args:
-            color (tuple): Cor RGBA da caixa
-            shininess (float): Brilho especular
+            color: Cor RGBA da caixa (valores 0.0-1.0)
+            shininess: Brilho especular (0.0-128.0, padrão 32.0)
         """
         # Ambient mais escuro para melhor contraste
         ambient = [c * 0.5 for c in color[:3]] + [1.0]
@@ -79,12 +81,12 @@ class Lighting:
     """Sistema de iluminação profissional com 3 luzes"""
     
     @staticmethod
-    def setup():
+    def setup() -> None:
         """
         Configura sistema de iluminação de 3 pontos profissional:
-        - Key Light (Luz Principal): Sol
-        - Fill Light (Luz de Preenchimento): Ilumina sombras
-        - Rim Light (Luz de Contorno): Adiciona profundidade
+        - Key Light (Luz Principal): Sol amarelo quente
+        - Fill Light (Luz de Preenchimento): Azul suave para sombras
+        - Rim Light (Luz de Contorno): Adiciona profundidade e separação
         """
         # Habilita iluminação
         glEnable(GL_LIGHTING)

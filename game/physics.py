@@ -31,7 +31,7 @@ FÍSICA DE MOVIMENTO:
 
 import math
 from typing import Tuple, List
-from config import PLAYER_RADIUS
+from config import PLAYER_RADIUS, SLIDING_FRICTION_FACTOR
 
 
 class Physics:
@@ -195,17 +195,17 @@ class Physics:
             current_z = new_z
             moved = True
         else:
-            # SLIDING MELHORADO: tenta com redução de velocidade
-            # Isso previne travamento em cantos apertados
-            
+            # SLIDING MELHORADO: tenta com redução de velocidade (fator de fricção)
+            # Isso previne travamento em cantos apertados e permite deslizar em paredes
+
             # Tenta mover só em X com velocidade reduzida
-            test_x = current_x + (dx * dt * 0.7)  # 70% da velocidade
+            test_x = current_x + (dx * dt * SLIDING_FRICTION_FACTOR)
             if Physics.can_move_to(test_x, current_z, walls, boxes):
                 current_x = test_x
                 moved = True
-            
+
             # Tenta mover só em Z com velocidade reduzida
-            test_z = current_z + (dz * dt * 0.7)
+            test_z = current_z + (dz * dt * SLIDING_FRICTION_FACTOR)
             if Physics.can_move_to(current_x, test_z, walls, boxes):
                 current_z = test_z
                 moved = True

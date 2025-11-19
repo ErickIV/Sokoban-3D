@@ -36,6 +36,7 @@ ESTADOS VISUAIS DAS CAIXAS:
 """
 
 import math
+from typing import List, Tuple, Optional
 from OpenGL.GL import (
     glEnable, glDisable, glCullFace, glBlendFunc, glHint, glClearColor,
     glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
@@ -48,7 +49,10 @@ from OpenGL.GL import (
 )
 from OpenGL.GLU import gluPerspective
 from config import (
-    FOV, NEAR_PLANE, FAR_PLANE, PLAYER_EYE_HEIGHT, SKY_COLOR, PARTICLE_LIFETIME, PARTICLE_COUNT
+    FOV, NEAR_PLANE, FAR_PLANE, PLAYER_EYE_HEIGHT, SKY_COLOR, PARTICLE_LIFETIME, PARTICLE_COUNT,
+    BOX_INTERACTION_DISTANCE, BOX_COLOR_ON_TARGET, BOX_SHININESS_ON_TARGET,
+    BOX_COLOR_PUSHABLE, BOX_SHININESS_PUSHABLE, BOX_COLOR_BLOCKED, BOX_SHININESS_BLOCKED,
+    BOX_COLOR_NORMAL, BOX_SHININESS_NORMAL
 )
 from .materials import Materials, Lighting
 from .primitives import Primitives
@@ -87,12 +91,13 @@ class Renderer:
         glClearColor(*SKY_COLOR)
     
     @staticmethod
-    def set_perspective(width, height):
+    def set_perspective(width: int, height: int) -> None:
         """
         Configura matriz de projeção perspectiva.
 
         Args:
-            width, height: Dimensões da janela
+            width: Largura da janela em pixels
+            height: Altura da janela em pixels
         """
         # Atualiza viewport para corresponder ao tamanho da janela
         glViewport(0, 0, width, height)
@@ -103,10 +108,10 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
     
     @staticmethod
-    def setup_camera(player):
+    def setup_camera(player) -> None:
         """
         Configura câmera em primeira pessoa.
-        
+
         Args:
             player: Objeto Player com posição e rotação
         """
@@ -120,12 +125,14 @@ class Renderer:
         glTranslatef(-player.x, -PLAYER_EYE_HEIGHT, -player.z)
     
     @staticmethod
-    def draw_wall(x, y, z):
+    def draw_wall(x: float, y: float, z: float) -> None:
         """
         Desenha uma parede.
-        
+
         Args:
-            x, y, z: Posição da parede
+            x: Posição X da parede
+            y: Posição Y da parede
+            z: Posição Z da parede
         """
         Materials.apply_wall_material_varied(x, z)
         glPushMatrix()
@@ -135,13 +142,15 @@ class Renderer:
         glPopMatrix()
     
     @staticmethod
-    def draw_box(x, y, z, status='normal'):
+    def draw_box(x: float, y: float, z: float, status: str = 'normal') -> None:
         """
         Desenha uma caixa com cor baseada no status.
-        
+
         Args:
-            x, y, z: Posição da caixa
-            status: 'normal', 'on_target', 'pushable', 'blocked'
+            x: Posição X da caixa
+            y: Posição Y da caixa
+            z: Posição Z da caixa
+            status: Estado visual - 'normal', 'on_target', 'pushable', 'blocked'
         """
         glPushMatrix()
         glTranslatef(x, y - 0.5, z)
@@ -149,17 +158,17 @@ class Renderer:
         
         # Define cor baseada no status
         if status == 'on_target':
-            color = (1.0, 0.84, 0.0, 1.0)  # Dourado
-            shininess = 64.0
+            color = BOX_COLOR_ON_TARGET
+            shininess = BOX_SHININESS_ON_TARGET
         elif status == 'pushable':
-            color = (0.2, 0.9, 0.2, 1.0)  # Verde
-            shininess = 32.0
+            color = BOX_COLOR_PUSHABLE
+            shininess = BOX_SHININESS_PUSHABLE
         elif status == 'blocked':
-            color = (0.9, 0.2, 0.2, 1.0)  # Vermelho
-            shininess = 32.0
+            color = BOX_COLOR_BLOCKED
+            shininess = BOX_SHININESS_BLOCKED
         else:  # normal
-            color = (0.72, 0.48, 0.16, 1.0)  # Marrom
-            shininess = 32.0
+            color = BOX_COLOR_NORMAL
+            shininess = BOX_SHININESS_NORMAL
         
         Materials.apply_box_material(color, shininess)
         Primitives.draw_unit_cube()
@@ -170,19 +179,21 @@ class Renderer:
         glPopMatrix()
     
     @staticmethod
-    def get_box_status(box_pos, objectives, player, level):
+    def get_box_status(box_pos: Tuple[float, float, float],
+                      objectives: List[Tuple[float, float, float]],
+                      player, level) -> str:
         """
         Determina status visual de uma caixa.
         CORRIGIDO: Detecção mais precisa e confiável.
-        
+
         Args:
             box_pos: Posição da caixa (tupla (x, y, z))
-            objectives: Lista de objetivos
-            player: Objeto Player
-            level: Objeto Level
-            
+            objectives: Lista de posições de objetivos
+            player: Objeto Player com posição e direção
+            level: Objeto Level com métodos de lógica
+
         Returns:
-            str: Status da caixa ('normal', 'on_target', 'pushable', 'blocked')
+            Status da caixa: 'normal', 'on_target', 'pushable', ou 'blocked'
         """
         # Caixa no objetivo (prioridade máxima)
         if box_pos in objectives:
@@ -204,12 +215,13 @@ class Renderer:
         # Compara apenas X e Z (ignora Y que é sempre 0)
         if box_pos[0] == box_in_front_x and box_pos[2] == box_in_front_z:
             # Verifica distância para evitar detecção de longe
+            # Calcula distância Chebyshev (max de diferenças absolutas)
             dist_x = abs(player.x - box_pos[0])
             dist_z = abs(player.z - box_pos[2])
             max_dist = max(dist_x, dist_z)
-            
-            # Só considera se estiver próximo (até 2.5 unidades)
-            if max_dist <= 2.5:
+
+            # Só considera se estiver dentro do alcance de interação
+            if max_dist <= BOX_INTERACTION_DISTANCE:
                 # Verifica se pode empurrar nesta direção
                 can_push, _, _ = level.can_push_box(player.x, player.z, dir_x, dir_z)
                 return 'pushable' if can_push else 'blocked'
@@ -217,13 +229,14 @@ class Renderer:
         return 'normal'
     
     @staticmethod
-    def draw_particles(particles, current_time):
+    def draw_particles(particles: List[Tuple[float, float, float, float]],
+                      current_time: float) -> None:
         """
         Desenha partículas de efeito.
-        
+
         Args:
-            particles: Lista de (x, y, z, start_time)
-            current_time: Tempo atual
+            particles: Lista de tuplas (x, y, z, start_time)
+            current_time: Tempo atual em segundos
         """
         glDisable(GL_LIGHTING)
         
@@ -246,16 +259,17 @@ class Renderer:
         glEnable(GL_LIGHTING)
     
     @staticmethod
-    def render_game_scene(level, player, current_time, sound_manager=None, show_hints=True):
+    def render_game_scene(level, player, current_time: float,
+                         sound_manager=None, show_hints: bool = True) -> None:
         """
         Renderiza cena principal do jogo.
 
         Args:
-            level: Objeto Level
-            player: Objeto Player
-            current_time: Tempo atual
-            sound_manager: Gerenciador de som
-            show_hints: Mostrar hints de controles
+            level: Objeto Level com paredes, caixas, objetivos
+            player: Objeto Player com posição e câmera
+            current_time: Tempo atual em segundos
+            sound_manager: Gerenciador de som (opcional)
+            show_hints: Se deve mostrar hints de controles
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
@@ -286,13 +300,22 @@ class Renderer:
         # Desenha partículas
         Renderer.draw_particles(level.particles, current_time)
         
-        # Desenha HUD
+        # Desenha HUD com estatísticas de performance
         stats = level.get_progress_stats()
-        UI.draw_hud(level.current_level_index, stats, sound_manager, show_hints)
+
+        # Obtém estatísticas de performance se disponível
+        perf_stats = None
+        try:
+            from utils.performance import get_performance_monitor
+            perf_stats = get_performance_monitor().get_stats()
+        except:
+            pass  # Se não disponível, continua sem mostrar FPS
+
+        UI.draw_hud(level.current_level_index, stats, sound_manager, show_hints, perf_stats)
         UI.draw_crosshair()
     
     @staticmethod
-    def render_menu_background():
+    def render_menu_background() -> None:
         """Renderiza fundo 3D para o menu"""
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
@@ -341,25 +364,25 @@ class Renderer:
         Primitives.draw_target_marker(-1, 0, 0)
     
     @staticmethod
-    def render_menu(sound_manager=None):
+    def render_menu(sound_manager=None) -> None:
         """
         Renderiza menu principal completo
-        
+
         Args:
-            sound_manager: Gerenciador de som
+            sound_manager: Gerenciador de som (opcional)
         """
         Renderer.render_menu_background()
         UI.draw_menu(sound_manager)
     
     @staticmethod
-    def render_victory(level, player, current_time):
+    def render_victory(level, player, current_time: float) -> None:
         """
         Renderiza tela de vitória de nível.
-        
+
         Args:
-            level: Objeto Level
-            player: Objeto Player
-            current_time: Tempo atual
+            level: Objeto Level com dados do nível
+            player: Objeto Player com posição da câmera
+            current_time: Tempo atual em segundos
         """
         # Renderiza cena de fundo
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -383,11 +406,11 @@ class Renderer:
         UI.draw_victory_screen(level.move_count)
     
     @staticmethod
-    def render_final_victory():
-        """Renderiza tela de vitória final"""
+    def render_final_victory() -> None:
+        """Renderiza tela de vitória final (todos os níveis completos)"""
         UI.draw_final_victory_screen()
     
     @staticmethod
-    def cleanup():
-        """Limpa recursos de renderização"""
+    def cleanup() -> None:
+        """Limpa recursos de renderização (display lists, texturas, etc)"""
         Primitives.cleanup()

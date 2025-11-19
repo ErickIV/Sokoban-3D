@@ -59,3 +59,39 @@ SKY_COLOR = (0.52, 0.75, 0.92, 1.0)  # Azul céu realista
 # -----------------------------
 PARTICLE_LIFETIME = 2.0     # Tempo de vida das partículas (segundos)
 PARTICLE_COUNT = 8          # Número de partículas por efeito
+
+# -----------------------------
+# Constantes de Física e Interação
+# -----------------------------
+BOX_INTERACTION_DISTANCE = 2.5   # Distância máxima para interagir com caixas
+WORLD_BOUNDARY_LIMIT = 100       # Limite de coordenadas do mundo
+SPAWN_ADJUSTMENT_OFFSET = 2.0    # Offset para ajustar spawn bloqueado
+SLIDING_FRICTION_FACTOR = 0.7    # Fator de atrito ao deslizar em paredes
+
+# -----------------------------
+# Cores dos Estados das Caixas
+# -----------------------------
+# Cor da caixa quando está em um objetivo
+BOX_COLOR_ON_TARGET = (1.0, 0.84, 0.0, 1.0)  # Dourado
+BOX_SHININESS_ON_TARGET = 64.0
+
+# Cor da caixa quando pode ser empurrada
+BOX_COLOR_PUSHABLE = (0.2, 0.9, 0.2, 1.0)  # Verde
+BOX_SHININESS_PUSHABLE = 32.0
+
+# Cor da caixa quando está bloqueada
+BOX_COLOR_BLOCKED = (0.9, 0.2, 0.2, 1.0)  # Vermelho
+BOX_SHININESS_BLOCKED = 32.0
+
+# Cor da caixa em estado normal
+BOX_COLOR_NORMAL = (0.72, 0.48, 0.16, 1.0)  # Marrom
+BOX_SHININESS_NORMAL = 32.0
+
+# -----------------------------
+# Configurações de Performance
+# -----------------------------
+# Número máximo de frames para cálculo de FPS médio
+FPS_AVERAGE_WINDOW = 60
+
+# Distância máxima de renderização para otimização
+MAX_RENDER_DISTANCE = FAR_PLANE
