@@ -260,10 +260,9 @@ class VisualEffects:
                                size: float, color: Tuple[float, float, float],
                                alpha: float = 1.0) -> None:
         """
-        Desenha partícula aprimorada com glow effect.
+        Desenha partícula ULTRA aprimorada com MULTI-LAYER GLOW EFFECT.
 
-        Partículas com brilho interno e borda suave para efeito
-        mais impressionante visualmente.
+        Partículas com 4 camadas de brilho para efeito WOW cinematográfico.
 
         Args:
             x, y, z: Posição da partícula
@@ -271,25 +270,56 @@ class VisualEffects:
             color: Cor RGB (0.0-1.0)
             alpha: Opacidade (0.0-1.0)
         """
-        from OpenGL.GL import glDisable, glEnable, GL_LIGHTING
+        from OpenGL.GL import glDisable, glEnable, GL_LIGHTING, glBlendFunc, GL_SRC_ALPHA, GL_ONE
         glDisable(GL_LIGHTING)
 
         glPushMatrix()
         glTranslatef(x, y, z)
 
-        # Camada externa (glow) - maior e mais transparente
+        # === CAMADA 1: MEGA GLOW (mais externo) ===
+        # Additive blending para glow intenso
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
         glBegin(GL_QUADS)
-        glow_size = size * 1.5
-        glColor4f(color[0], color[1], color[2], alpha * 0.3)
-        glVertex3f(-glow_size, -glow_size, 0)
-        glVertex3f(glow_size, -glow_size, 0)
-        glVertex3f(glow_size, glow_size, 0)
-        glVertex3f(-glow_size, glow_size, 0)
+        mega_glow = size * 2.5
+        glColor4f(color[0] * 0.8, color[1] * 0.8, color[2] * 0.8, alpha * 0.12)
+        glVertex3f(-mega_glow, -mega_glow, 0)
+        glVertex3f(mega_glow, -mega_glow, 0)
+        glVertex3f(mega_glow, mega_glow, 0)
+        glVertex3f(-mega_glow, mega_glow, 0)
         glEnd()
 
-        # Camada interna (core) - menor e mais opaco
+        # === CAMADA 2: GLOW MÉDIO ===
         glBegin(GL_QUADS)
-        glColor4f(color[0], color[1], color[2], alpha)
+        medium_glow = size * 1.8
+        glColor4f(color[0], color[1], color[2], alpha * 0.25)
+        glVertex3f(-medium_glow, -medium_glow, 0)
+        glVertex3f(medium_glow, -medium_glow, 0)
+        glVertex3f(medium_glow, medium_glow, 0)
+        glVertex3f(-medium_glow, medium_glow, 0)
+        glEnd()
+
+        # === CAMADA 3: GLOW INTERNO ===
+        glBegin(GL_QUADS)
+        inner_glow = size * 1.3
+        glColor4f(color[0], color[1], color[2], alpha * 0.5)
+        glVertex3f(-inner_glow, -inner_glow, 0)
+        glVertex3f(inner_glow, -inner_glow, 0)
+        glVertex3f(inner_glow, inner_glow, 0)
+        glVertex3f(-inner_glow, inner_glow, 0)
+        glEnd()
+
+        # === CAMADA 4: CORE BRILHANTE ===
+        # Volta para blending normal
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBegin(GL_QUADS)
+        # Core com cor mais clara (quase branca no centro)
+        core_brightness = 1.0 - (1.0 - alpha) * 0.5  # Fica mais claro
+        glColor4f(
+            min(1.0, color[0] + 0.3),
+            min(1.0, color[1] + 0.3),
+            min(1.0, color[2] + 0.3),
+            alpha
+        )
         glVertex3f(-size, -size, 0)
         glVertex3f(size, -size, 0)
         glVertex3f(size, size, 0)
