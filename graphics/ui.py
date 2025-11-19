@@ -137,11 +137,15 @@ class UI:
         # Hints de controles (toggle com H)
         if show_hints:
             UI.draw_text(20, y,
-                "WASD: mover | SHIFT: correr | Mouse: olhar | ESPAÇO: empurrar",
+                "WASD: mover | SHIFT: correr | Mouse: olhar | ESPACO: empurrar",
                 16)
             y -= 28
             UI.draw_text(20, y,
                 "R: reset | P: pause | H: hints | F11: fullscreen | ESC: sair",
+                16)
+            y -= 28
+            UI.draw_text(20, y,
+                "M: musica ON/OFF | N: sons ON/OFF",
                 16)
             y -= 32
         else:
