@@ -37,11 +37,12 @@ from OpenGL.GL import (
     glEnable, glDisable, glFogi, glFogf, glFogfv,
     glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef,
     glBegin, glEnd, glVertex3f, glColor3f, glColor4f,
-    glBlendFunc, glDepthMask,
+    glBlendFunc, glDepthMask, glMaterialfv, glMaterialf,
     GL_FOG, GL_FOG_MODE, GL_FOG_COLOR, GL_FOG_DENSITY,
     GL_FOG_START, GL_FOG_END, GL_EXP2, GL_LINEAR,
     GL_QUADS, GL_TRIANGLE_FAN, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
-    GL_BLEND, GL_TRUE, GL_FALSE
+    GL_BLEND, GL_LIGHTING, GL_FRONT_AND_BACK, GL_AMBIENT, GL_DIFFUSE,
+    GL_SPECULAR, GL_EMISSION, GL_SHININESS, GL_TRUE, GL_FALSE
 )
 from config import (
     FOG_ENABLED, FOG_COLOR, FOG_DENSITY, FOG_START, FOG_END,
@@ -270,7 +271,6 @@ class VisualEffects:
             color: Cor RGB (0.0-1.0)
             alpha: Opacidade (0.0-1.0)
         """
-        from OpenGL.GL import glEnable, glMaterialfv, glMaterialf, GL_FRONT_AND_BACK, GL_SHININESS
         from OpenGL.GLUT import glutSolidSphere
 
         glPushMatrix()
