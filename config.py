@@ -95,3 +95,44 @@ FPS_AVERAGE_WINDOW = 60
 
 # Distância máxima de renderização para otimização
 MAX_RENDER_DISTANCE = FAR_PLANE
+
+# -----------------------------
+# Configurações de Névoa (Fog)
+# -----------------------------
+FOG_ENABLED = True              # Habilita névoa atmosférica
+FOG_COLOR = (0.52, 0.75, 0.92, 1.0)  # Cor da névoa (mesmo que céu)
+FOG_DENSITY = 0.02              # Densidade da névoa (exponencial)
+FOG_START = 10.0                # Distância inicial da névoa (linear)
+FOG_END = 50.0                  # Distância final da névoa (linear)
+
+# -----------------------------
+# Configurações de Skybox
+# -----------------------------
+SKYBOX_ENABLED = True           # Habilita skybox com gradiente
+SKY_TOP_COLOR = (0.2, 0.5, 0.9, 1.0)      # Azul escuro no topo
+SKY_HORIZON_COLOR = (0.7, 0.85, 0.95, 1.0)  # Azul claro no horizonte
+
+# -----------------------------
+# Configurações de Sombras
+# -----------------------------
+SHADOW_SOFTNESS = 0.4           # Suavidade das sombras (0.0-1.0)
+SHADOW_INTENSITY = 0.5          # Intensidade/opacidade das sombras
+SHADOW_OFFSET_Y = 0.01          # Offset Y para evitar z-fighting
+
+# -----------------------------
+# Configurações de Nuvens
+# -----------------------------
+CLOUD_COUNT = 25                # Número de nuvens no céu
+CLOUD_MIN_SIZE = 3.0            # Tamanho mínimo das nuvens
+CLOUD_MAX_SIZE = 8.0            # Tamanho máximo das nuvens
+CLOUD_HEIGHT_MIN = 15.0         # Altura mínima das nuvens
+CLOUD_HEIGHT_MAX = 25.0         # Altura máxima das nuvens
+CLOUD_WIND_SPEED = 0.5          # Velocidade do vento
+CLOUD_OPACITY = 0.85            # Opacidade das nuvens
+
+# -----------------------------
+# Configurações de Qualidade Visual
+# -----------------------------
+MULTISAMPLE_SAMPLES = 4         # Amostras para anti-aliasing (0 = off)
+ENABLE_SPECULAR_HIGHLIGHTS = True  # Highlights especulares
+AMBIENT_OCCLUSION_STRENGTH = 0.3   # Força do AO simulado

@@ -58,6 +58,7 @@ from .materials import Materials, Lighting
 from .primitives import Primitives
 from .ui import UI
 from .clouds import CloudSystem
+from .visual_effects import VisualEffects
 
 
 class Renderer:
@@ -70,25 +71,37 @@ class Renderer:
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
-        
-        # Suavização
+
+        # Suavização (anti-aliasing)
         glEnable(GL_LINE_SMOOTH)
         glEnable(GL_POINT_SMOOTH)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
-        
+
+        # Multisample anti-aliasing
+        from OpenGL.GL import GL_MULTISAMPLE, glEnable as gl_enable
+        try:
+            from config import MULTISAMPLE_SAMPLES
+            if MULTISAMPLE_SAMPLES > 0:
+                gl_enable(GL_MULTISAMPLE)
+        except:
+            pass  # Se não disponível, continua sem
+
         # Blending
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
+
         # Sistema de iluminação profissional
         Lighting.setup()
-        
+
         # Material padrão
         Materials.apply_wall_material()
-        
+
         # Cor de fundo (céu)
         glClearColor(*SKY_COLOR)
+
+        # Inicializa efeitos visuais (fog, etc)
+        VisualEffects.init()
     
     @staticmethod
     def set_perspective(width: int, height: int) -> None:
@@ -253,8 +266,12 @@ class Renderer:
                     pz = z + math.sin(angle + elapsed * 3) * offset
                     py = y - 0.2 + math.sin(elapsed * 5) * 0.3 + 0.3
                     
-                    # Cor amarela brilhante
-                    Primitives.draw_particle(px, py, pz, 0.1, (1.0, 1.0, 0.0))
+                    # Partículas aprimoradas com glow
+                    # Calcula alpha baseado no tempo (fade out)
+                    fade = 1.0 - (elapsed / PARTICLE_LIFETIME)
+                    VisualEffects.draw_enhanced_particle(
+                        px, py, pz, 0.08, (1.0, 1.0, 0.0), alpha=fade
+                    )
         
         glEnable(GL_LIGHTING)
     
@@ -272,13 +289,16 @@ class Renderer:
             show_hints: Se deve mostrar hints de controles
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        
+
         # Configura câmera
         Renderer.setup_camera(player)
-        
-        # Desenha nuvens (no fundo, antes de tudo)
+
+        # Desenha skybox primeiro (fundo infinito)
+        VisualEffects.render_skybox(player.x, PLAYER_EYE_HEIGHT, player.z)
+
+        # Desenha nuvens (no fundo, antes da geometria)
         if hasattr(level, 'clouds') and level.clouds:
-            level.clouds.render((player.x, player.y, player.z))
+            level.clouds.render((player.x, PLAYER_EYE_HEIGHT, player.z))
         
         # Desenha chão
         Primitives.draw_floor()
@@ -291,11 +311,12 @@ class Renderer:
         for (x, y, z) in level.objectives:
             Primitives.draw_target_marker(x, y, z)
         
-        # Desenha caixas com sombras
+        # Desenha caixas com sombras suaves
         for (x, y, z) in level.boxes:
             status = Renderer.get_box_status((x, y, z), level.objectives, player, level)
             Renderer.draw_box(x, y, z, status)
-            Primitives.draw_shadow(x, y, z)
+            # Usa sombra suave aprimorada
+            VisualEffects.draw_soft_shadow(x, y, z, size=0.45)
         
         # Desenha partículas
         Renderer.draw_particles(level.particles, current_time)
