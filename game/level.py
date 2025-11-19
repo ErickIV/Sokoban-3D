@@ -206,10 +206,11 @@ class Level:
         self.move_count = 0
         self.particles = []
         
-        # Inicializa sistema de nuvens (distribuídas em 360°)
+        # Inicializa sistema de nuvens melhorado
+        from config import CLOUD_COUNT, CLOUD_WIND_SPEED
         if self.clouds:
             self.clouds.cleanup()  # Limpa nuvens antigas
-        self.clouds = CloudSystem(num_clouds=15, wind_speed=0.8)
+        self.clouds = CloudSystem(num_clouds=CLOUD_COUNT, wind_speed=CLOUD_WIND_SPEED)
         
         return True
     
