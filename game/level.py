@@ -311,7 +311,7 @@ class Level:
         if dest_pos in self.objectives:
             # Explosão de partículas coloridas e variadas!
             import random
-            num_particles = 15  # Mais partículas para efeito espetacular
+            num_particles = 8  # Partículas balanceadas para efeito bonito
 
             for i in range(num_particles):
                 # Posições variadas ao redor da caixa

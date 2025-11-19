@@ -204,10 +204,13 @@ class CloudSystem:
         Args:
             camera_pos: Posição da câmera (para billboard)
         """
+        # Desabilita lighting para nuvens brilhantes (usam vertex colors)
+        glDisable(GL_LIGHTING)
+
         # Habilita blending para transparência
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
+
         # Desabilita depth write (nuvens não devem bloquear outras nuvens)
         glDepthMask(GL_FALSE)
         
@@ -253,6 +256,7 @@ class CloudSystem:
         glDisable(GL_TEXTURE_2D)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
+        glEnable(GL_LIGHTING)  # Reativa lighting para resto da cena
     
     def cleanup(self):
         """Libera recursos da GPU"""
