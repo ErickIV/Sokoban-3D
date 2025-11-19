@@ -260,75 +260,62 @@ class VisualEffects:
                                size: float, color: Tuple[float, float, float],
                                alpha: float = 1.0) -> None:
         """
-        Desenha partícula ULTRA aprimorada com MULTI-LAYER GLOW EFFECT.
+        Desenha partícula como ESFERA 3D com MULTI-LAYER GLOW EFFECT.
 
-        Partículas com 4 camadas de brilho para efeito WOW cinematográfico.
+        Esferas 3D com brilho especular para efeito ultra realista!
 
         Args:
             x, y, z: Posição da partícula
-            size: Tamanho da partícula
+            size: Tamanho da partícula (raio da esfera)
             color: Cor RGB (0.0-1.0)
             alpha: Opacidade (0.0-1.0)
         """
-        from OpenGL.GL import glDisable, glEnable, GL_LIGHTING, glBlendFunc, GL_SRC_ALPHA, GL_ONE
-        glDisable(GL_LIGHTING)
+        from OpenGL.GL import glEnable, glMaterialfv, glMaterialf, GL_FRONT_AND_BACK, GL_SHININESS
+        from OpenGL.GLUT import glutSolidSphere
 
         glPushMatrix()
         glTranslatef(x, y, z)
 
-        # === CAMADA 1: MEGA GLOW (mais externo) ===
-        # Additive blending para glow intenso
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
-        glBegin(GL_QUADS)
-        mega_glow = size * 2.5
-        glColor4f(color[0] * 0.8, color[1] * 0.8, color[2] * 0.8, alpha * 0.12)
-        glVertex3f(-mega_glow, -mega_glow, 0)
-        glVertex3f(mega_glow, -mega_glow, 0)
-        glVertex3f(mega_glow, mega_glow, 0)
-        glVertex3f(-mega_glow, mega_glow, 0)
-        glEnd()
-
-        # === CAMADA 2: GLOW MÉDIO ===
-        glBegin(GL_QUADS)
-        medium_glow = size * 1.8
-        glColor4f(color[0], color[1], color[2], alpha * 0.25)
-        glVertex3f(-medium_glow, -medium_glow, 0)
-        glVertex3f(medium_glow, -medium_glow, 0)
-        glVertex3f(medium_glow, medium_glow, 0)
-        glVertex3f(-medium_glow, medium_glow, 0)
-        glEnd()
-
-        # === CAMADA 3: GLOW INTERNO ===
-        glBegin(GL_QUADS)
-        inner_glow = size * 1.3
-        glColor4f(color[0], color[1], color[2], alpha * 0.5)
-        glVertex3f(-inner_glow, -inner_glow, 0)
-        glVertex3f(inner_glow, -inner_glow, 0)
-        glVertex3f(inner_glow, inner_glow, 0)
-        glVertex3f(-inner_glow, inner_glow, 0)
-        glEnd()
-
-        # === CAMADA 4: CORE BRILHANTE ===
-        # Volta para blending normal
+        glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glBegin(GL_QUADS)
-        # Core com cor mais clara (quase branca no centro)
-        core_brightness = 1.0 - (1.0 - alpha) * 0.5  # Fica mais claro
-        glColor4f(
-            min(1.0, color[0] + 0.3),
-            min(1.0, color[1] + 0.3),
-            min(1.0, color[2] + 0.3),
+        glEnable(GL_LIGHTING)
+
+        # === ESFERA GLOW EXTERNA (grande e translúcida) ===
+        # Material emissivo para glow
+        glow_size = size * 2.0
+        glow_color = [color[0] * 0.6, color[1] * 0.6, color[2] * 0.6, alpha * 0.3]
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, glow_color)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, glow_color)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [0.8, 0.8, 0.8, alpha * 0.3])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [color[0] * 0.3, color[1] * 0.3, color[2] * 0.3, alpha * 0.2])
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0)
+
+        glutSolidSphere(glow_size, 8, 8)  # Baixa resolução para glow
+
+        # === ESFERA PRINCIPAL (brilhante e opaca) ===
+        # Cor vibrante com alto specular
+        core_color = [
+            min(1.0, color[0] + 0.2),
+            min(1.0, color[1] + 0.2),
+            min(1.0, color[2] + 0.2),
             alpha
-        )
-        glVertex3f(-size, -size, 0)
-        glVertex3f(size, -size, 0)
-        glVertex3f(size, size, 0)
-        glVertex3f(-size, size, 0)
-        glEnd()
+        ]
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [c * 0.4 for c in core_color[:3]] + [alpha])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, core_color)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1.0, 1.0, 1.0, alpha])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [color[0] * 0.6, color[1] * 0.6, color[2] * 0.6, alpha * 0.4])
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128.0)
+
+        glutSolidSphere(size, 12, 12)  # Alta resolução para esfera principal
+
+        # Limpa material emissivo
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0.0, 0.0, 0.0, 1.0])
+
+        glDisable(GL_BLEND)
 
         glPopMatrix()
-
-        glEnable(GL_LIGHTING)
 
     @staticmethod
     def apply_ambient_occlusion(x: float, y: float, z: float,
