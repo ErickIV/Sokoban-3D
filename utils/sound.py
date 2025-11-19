@@ -256,76 +256,75 @@ class SoundManager:
         return sound
     
     def _generate_music_tracks(self):
-        """Gera músicas de fundo estilo 8-bit para cada fase"""
-        # Frequências das notas (em Hz)
+        """Gera músicas de fundo estilo 8-bit relaxantes e agradáveis"""
+        # Frequências das notas (em Hz) - ampliado
         C4, D4, E4, F4, G4, A4, B4 = 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88
-        C5, D5, E5, F5, G5 = 523.25, 587.33, 659.25, 698.46, 783.99
-        
-        # Fase 1: Melodia alegre e simples
+        C5, D5, E5, F5, G5, A5 = 523.25, 587.33, 659.25, 698.46, 783.99, 880.00
+
+        # Fase 1: Melodia suave e relaxante (inspirada em Gymnopédie)
         track1 = [
-            (C4, 0.5), (E4, 0.5), (G4, 0.5), (C5, 0.5),
-            (E5, 0.25), (G4, 0.25), (C5, 0.5), (G4, 0.5),
-            (C4, 0.5), (E4, 0.5), (G4, 0.5), (E4, 0.5),
-            (C4, 1.0), (None, 0.5),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (D5, 0.5),
+            (E5, 1.0), (None, 0.25),
+            (G4, 0.75), (A4, 0.25), (C5, 0.5), (E5, 0.5),
+            (D5, 1.5), (None, 0.5),
+            (C5, 0.75), (B4, 0.25), (A4, 0.5), (G4, 0.5),
+            (E4, 1.0), (None, 0.5),
         ]
-        
-        # Fase 2: Mais rápida e energética
+
+        # Fase 2: Melodia mais alegre e fluida
         track2 = [
-            (G4, 0.25), (A4, 0.25), (B4, 0.25), (C5, 0.25),
-            (D5, 0.5), (C5, 0.25), (B4, 0.25),
-            (A4, 0.5), (G4, 0.5),
-            (E4, 0.25), (G4, 0.25), (C5, 0.5),
-            (G4, 1.0), (None, 0.5),
+            (C5, 0.5), (D5, 0.5), (E5, 0.5), (G5, 0.5),
+            (E5, 0.5), (D5, 0.5), (C5, 1.0),
+            (None, 0.25),
+            (A4, 0.5), (C5, 0.5), (E5, 0.5), (D5, 0.5),
+            (C5, 0.5), (A4, 0.5), (G4, 1.0),
+            (None, 0.5),
         ]
-        
-        # Fase 3: Misteriosa
+
+        # Fase 3: Melodia contemplativa (estilo minimalista)
         track3 = [
-            (A4, 0.5), (None, 0.25), (A4, 0.25),
-            (G4, 0.5), (F4, 0.5),
-            (E4, 0.75), (None, 0.25),
-            (D4, 0.5), (E4, 0.5),
-            (F4, 1.0), (None, 0.5),
+            (A4, 1.0), (None, 0.25), (G4, 0.75),
+            (F4, 1.0), (E4, 1.0),
+            (None, 0.5),
+            (D5, 0.75), (C5, 0.25), (A4, 1.0),
+            (G4, 1.5), (None, 0.5),
         ]
-        
-        # Fase 4: Desafiadora
+
+        # Fase 4: Melodia inspiradora mas calma
         track4 = [
-            (C5, 0.25), (B4, 0.25), (A4, 0.25), (G4, 0.25),
-            (A4, 0.5), (C5, 0.5),
-            (E5, 0.25), (D5, 0.25), (C5, 0.5),
-            (G4, 0.75), (None, 0.25),
-            (F4, 0.5), (E4, 0.5),
-            (D4, 1.0), (None, 0.5),
+            (G4, 0.5), (A4, 0.5), (C5, 0.75), (E5, 0.25),
+            (D5, 1.0), (C5, 0.5), (None, 0.25),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (A4, 0.5),
+            (G4, 1.5), (None, 0.5),
         ]
-        
-        # Fase 5 (final): Épica
+
+        # Fase 5 (final): Melodia vitoriosa mas tranquila
         track5 = [
-            (C5, 0.5), (G4, 0.25), (C5, 0.25),
-            (E5, 0.5), (D5, 0.5),
-            (C5, 0.25), (D5, 0.25), (E5, 0.25), (F5, 0.25),
-            (G5, 1.0),
-            (E5, 0.5), (C5, 0.5),
-            (G4, 1.0), (None, 0.5),
+            (C5, 0.75), (E5, 0.25), (G5, 0.5), (E5, 0.5),
+            (D5, 0.5), (E5, 0.5), (C5, 1.0),
+            (None, 0.25),
+            (A4, 0.5), (C5, 0.5), (D5, 0.5), (E5, 0.5),
+            (C5, 1.0), (G4, 0.5), (None, 0.25),
+            (C5, 2.0),
         ]
-        
-        # Gera todas as músicas
-        self.music_tracks[0] = self._generate_music_note_sequence(track1, tempo=140)
-        self.music_tracks[1] = self._generate_music_note_sequence(track2, tempo=160)
-        self.music_tracks[2] = self._generate_music_note_sequence(track3, tempo=120)
-        self.music_tracks[3] = self._generate_music_note_sequence(track4, tempo=150)
-        self.music_tracks[4] = self._generate_music_note_sequence(track5, tempo=130)
-        
-        # Música do menu: Cativante e chamativa
+
+        # Gera todas as músicas com tempos mais lentos (relaxantes)
+        self.music_tracks[0] = self._generate_music_note_sequence(track1, tempo=90)
+        self.music_tracks[1] = self._generate_music_note_sequence(track2, tempo=100)
+        self.music_tracks[2] = self._generate_music_note_sequence(track3, tempo=85)
+        self.music_tracks[3] = self._generate_music_note_sequence(track4, tempo=95)
+        self.music_tracks[4] = self._generate_music_note_sequence(track5, tempo=100)
+
+        # Música do menu: Acolhedora e suave
         menu_track = [
-            (C5, 0.5), (E5, 0.5), (G5, 0.5), (E5, 0.5),
-            (D5, 0.5), (F5, 0.5), (A4, 0.5), (D5, 0.5),
-            (C5, 0.5), (E5, 0.5), (G5, 1.0),
+            (C5, 0.75), (D5, 0.25), (E5, 0.5), (G5, 0.5),
+            (E5, 1.0), (D5, 0.5), (None, 0.25),
+            (C5, 0.5), (A4, 0.5), (G4, 1.0),
             (None, 0.5),
-            (G4, 0.25), (A4, 0.25), (B4, 0.25), (C5, 0.25),
-            (D5, 0.5), (C5, 0.5), (B4, 0.5), (A4, 0.5),
-            (G4, 1.5),
-            (None, 0.5),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (A4, 0.5),
+            (G4, 1.5), (None, 0.5),
         ]
-        self.music_tracks['menu'] = self._generate_music_note_sequence(menu_track, tempo=150)
+        self.music_tracks['menu'] = self._generate_music_note_sequence(menu_track, tempo=105)
     
     def play_music(self, level_index, is_menu=False):
         """
