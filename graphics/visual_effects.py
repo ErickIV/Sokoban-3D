@@ -271,7 +271,7 @@ class VisualEffects:
             color: Cor RGB (0.0-1.0)
             alpha: Opacidade (0.0-1.0)
         """
-        from OpenGL.GLUT import glutSolidSphere
+        from OpenGL.GLU import gluNewQuadric, gluSphere, gluDeleteQuadric
 
         glPushMatrix()
         glTranslatef(x, y, z)
@@ -279,6 +279,9 @@ class VisualEffects:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_LIGHTING)
+
+        # Cria objeto quadric para renderizar esferas
+        quadric = gluNewQuadric()
 
         # === ESFERA GLOW EXTERNA (grande e translúcida) ===
         # Material emissivo para glow
@@ -291,7 +294,7 @@ class VisualEffects:
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [color[0] * 0.3, color[1] * 0.3, color[2] * 0.3, alpha * 0.2])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0)
 
-        glutSolidSphere(glow_size, 8, 8)  # Baixa resolução para glow
+        gluSphere(quadric, glow_size, 8, 8)  # Baixa resolução para glow
 
         # === ESFERA PRINCIPAL (brilhante e opaca) ===
         # Cor vibrante com alto specular
@@ -308,10 +311,13 @@ class VisualEffects:
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [color[0] * 0.6, color[1] * 0.6, color[2] * 0.6, alpha * 0.4])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128.0)
 
-        glutSolidSphere(size, 12, 12)  # Alta resolução para esfera principal
+        gluSphere(quadric, size, 12, 12)  # Alta resolução para esfera principal
 
         # Limpa material emissivo
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0.0, 0.0, 0.0, 1.0])
+
+        # Deleta objeto quadric
+        gluDeleteQuadric(quadric)
 
         glDisable(GL_BLEND)
 
