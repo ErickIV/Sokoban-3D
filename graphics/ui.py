@@ -26,7 +26,7 @@ class UI:
     @staticmethod
     def draw_text(x, y, text, size=18, color=(1.0, 1.0, 1.0)):
         """
-        Desenha texto 2D com outline grosso para máxima legibilidade.
+        Desenha texto 2D com outline simples e legível.
 
         Args:
             x, y: Posição na tela
@@ -47,12 +47,11 @@ class UI:
 
         font = GLUT_BITMAP_HELVETICA_18 if size >= 18 else GLUT_BITMAP_8_BY_13
 
-        # Outline grosso preto em 8 direções (3 pixels de raio)
+        # Outline preto simples (8 direções)
         glColor3f(0.0, 0.0, 0.0)
         offsets = [
-            (-3, 0), (3, 0), (0, -3), (0, 3),  # Cardeal
-            (-2, -2), (-2, 2), (2, -2), (2, 2),  # Diagonal
-            (-3, -3), (-3, 3), (3, -3), (3, 3),  # Diagonal externo
+            (-2, 0), (2, 0), (0, -2), (0, 2),      # Cardeal
+            (-1, -1), (-1, 1), (1, -1), (1, 1),    # Diagonal
         ]
 
         for dx, dy in offsets:
@@ -60,7 +59,7 @@ class UI:
             for ch in text:
                 glutBitmapCharacter(font, ord(ch))
 
-        # Texto principal com cor vibrante
+        # Texto principal
         glColor3f(*color)
         glRasterPos2f(x, y)
         for ch in text:
@@ -140,24 +139,24 @@ class UI:
         if show_hints:
             UI.draw_text(20, y,
                 "WASD: mover | SHIFT: correr | Mouse: olhar | ESPACO: empurrar",
-                16, color=(0.9, 0.95, 1.0))
+                16, color=(1.0, 1.0, 0.0))  # Amarelo forte
             y -= 28
             UI.draw_text(20, y,
                 "R: reset | P: pause | H: hints | F11: fullscreen | ESC: sair",
-                16, color=(0.9, 0.95, 1.0))
+                16, color=(1.0, 1.0, 0.0))  # Amarelo forte
             y -= 32
         else:
-            UI.draw_text(20, y, "Pressione H para ver controles", 14, color=(1.0, 1.0, 0.7))
+            UI.draw_text(20, y, "Pressione H para ver controles", 14, color=(1.0, 0.8, 0.0))  # Laranja
             y -= 32
 
         # === STATUS DO NÍVEL ===
         UI.draw_text(20, y,
             f"Level {level_index + 1} | Caixas: {stats['boxes_on_target']}/{stats['total_boxes']}",
-            18, color=(1.0, 0.95, 0.5))
+            18, color=(1.0, 0.5, 0.0))  # Laranja vibrante
 
         # Movimentos
         y -= 32
-        UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18, color=(0.95, 1.0, 0.95))
+        UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18, color=(0.0, 1.0, 1.0))  # Ciano
 
         # FPS counter (se disponível)
         if perf_stats:
@@ -165,15 +164,15 @@ class UI:
             fps = perf_stats.get('fps', 0.0)
             frame_time = perf_stats.get('frame_time_ms', 0.0)
 
-            # Cor baseada em performance (mais saturadas)
+            # Cor baseada em performance (cores fortes e contrastantes)
             if fps >= 90:
-                fps_color = (0.5, 1.0, 0.5)  # Verde vibrante (excelente)
+                fps_color = (0.0, 1.0, 0.0)  # Verde puro (excelente)
             elif fps >= 60:
-                fps_color = (1.0, 1.0, 0.5)  # Amarelo vibrante (bom)
+                fps_color = (1.0, 1.0, 0.0)  # Amarelo puro (bom)
             elif fps >= 30:
-                fps_color = (1.0, 0.7, 0.4)  # Laranja (razoável)
+                fps_color = (1.0, 0.5, 0.0)  # Laranja (razoável)
             else:
-                fps_color = (1.0, 0.4, 0.4)  # Vermelho (ruim)
+                fps_color = (1.0, 0.0, 0.0)  # Vermelho puro (ruim)
 
             UI.draw_text(20, y, f"FPS: {fps:.1f} ({frame_time:.1f}ms)", 16, color=fps_color)
 
@@ -184,13 +183,13 @@ class UI:
 
             # Status da música
             music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
-            music_color = (0.6, 1.0, 0.6) if sound_manager.music_enabled else (1.0, 0.5, 0.5)
+            music_color = (0.0, 1.0, 0.0) if sound_manager.music_enabled else (1.0, 0.0, 0.0)  # Verde/Vermelho puros
             UI.draw_text(audio_x, audio_y, f"Music: {music_status}", 16, color=music_color)
 
             # Status dos sons
             audio_y -= 28
             sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
-            sfx_color = (0.6, 1.0, 0.6) if sound_manager.sfx_enabled else (1.0, 0.5, 0.5)
+            sfx_color = (0.0, 1.0, 0.0) if sound_manager.sfx_enabled else (1.0, 0.0, 0.0)  # Verde/Vermelho puros
             UI.draw_text(audio_x, audio_y, f"Sound: {sfx_status}", 16, color=sfx_color)
 
         # === DICAS DE GAMEPLAY ===
@@ -198,10 +197,10 @@ class UI:
             y -= 32
             if stats['boxes_on_target'] == 0:
                 UI.draw_text(20, y,
-                    "Dica: Empurre as caixas para os X vermelhos!", 16, color=(0.7, 1.0, 0.7))
+                    "Dica: Empurre as caixas para os X vermelhos!", 16, color=(1.0, 0.0, 1.0))  # Magenta
             elif stats['boxes_on_target'] < stats['total_boxes']:
                 UI.draw_text(20, y,
-                    "Continue empurrando as caixas restantes!", 16, color=(0.7, 1.0, 0.7))
+                    "Continue empurrando as caixas restantes!", 16, color=(1.0, 0.0, 1.0))  # Magenta
     
     @staticmethod
     def draw_victory_screen(move_count):
@@ -359,21 +358,21 @@ class UI:
 
         glDisable(GL_BLEND)
 
-        # Textos do menu com cores vibrantes
-        UI.draw_text(cx - 160, cy + 120, "BOXPUSH 3D SOKOBAN", 24, color=(1.0, 0.95, 0.4))
+        # Textos do menu com cores vibrantes e contrastantes
+        UI.draw_text(cx - 160, cy + 120, "BOXPUSH 3D SOKOBAN", 24, color=(1.0, 1.0, 0.0))  # Amarelo puro
         UI.draw_text(cx - 180, cy + 80,
-            "Empurre as caixas para os objetivos!", 18, color=(0.9, 1.0, 0.9))
-        UI.draw_text(cx - 120, cy + 50, "5 NIVEIS DESAFIADORES", 16, color=(1.0, 0.85, 0.4))
+            "Empurre as caixas para os objetivos!", 18, color=(0.0, 1.0, 1.0))  # Ciano
+        UI.draw_text(cx - 120, cy + 50, "5 NIVEIS DESAFIADORES", 16, color=(1.0, 0.5, 0.0))  # Laranja
 
-        UI.draw_text(cx - 100, cy + 10, "ENTER - Comecar Jogo", 18, color=(0.6, 1.0, 0.6))
-        UI.draw_text(cx - 60, cy - 20, "ESC - Sair", 18, color=(1.0, 0.6, 0.6))
+        UI.draw_text(cx - 100, cy + 10, "ENTER - Comecar Jogo", 18, color=(0.0, 1.0, 0.0))  # Verde puro
+        UI.draw_text(cx - 60, cy - 20, "ESC - Sair", 18, color=(1.0, 0.0, 0.0))  # Vermelho puro
 
         UI.draw_text(cx - 280, cy - 60,
             "Controles: WASD=Mover | SHIFT=Correr | Mouse=Olhar | Espaco=Empurrar",
-            14, color=(0.85, 0.95, 1.0))
+            14, color=(1.0, 1.0, 1.0))  # Branco
         UI.draw_text(cx - 180, cy - 85,
             "M=Musica ON/OFF | N=Sons ON/OFF | R=Reiniciar",
-            14, color=(0.85, 0.95, 1.0))
+            14, color=(1.0, 1.0, 1.0))  # Branco
 
         # Status de áudio com cores indicativas
         if sound_manager:
@@ -381,12 +380,9 @@ class UI:
             music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
             sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
 
-            music_color = (0.6, 1.0, 0.6) if sound_manager.music_enabled else (1.0, 0.6, 0.6)
-            sfx_color = (0.6, 1.0, 0.6) if sound_manager.sfx_enabled else (1.0, 0.6, 0.6)
-
-            # Desenha com cores combinadas
+            # Desenha com cores indicativas
             UI.draw_text(cx - 100, audio_y,
-                f"Music: {music_status} | Sound: {sfx_status}", 16, color=(1.0, 1.0, 0.8))
+                f"Music: {music_status} | Sound: {sfx_status}", 16, color=(1.0, 0.8, 0.0))
 
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
