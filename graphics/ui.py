@@ -10,9 +10,9 @@ import time
 from OpenGL.GL import (
     glMatrixMode, glLoadIdentity, glPushMatrix, glPopMatrix,
     glColor3f, glColor4f, glBegin, glEnd, glVertex2f, glVertex3f, glRasterPos2f,
-    glDisable, glEnable, glLineWidth, glBlendFunc, glPointSize,
+    glDisable, glEnable, glLineWidth, glBlendFunc, glPointSize, glIsEnabled,
     GL_PROJECTION, GL_MODELVIEW, GL_DEPTH_TEST, GL_LINES, GL_LINE_LOOP,
-    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_QUADS, GL_POINTS
+    GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_QUADS, GL_POINTS, GL_FOG
 )
 from OpenGL.GL import glOrtho
 from OpenGL.GLU import gluOrtho2D
@@ -27,7 +27,7 @@ class UI:
     def draw_text(x, y, text, size=18):
         """
         Desenha texto 2D na tela com sombra.
-        
+
         Args:
             x, y: Posição na tela
             text: Texto a ser desenhado
@@ -40,26 +40,33 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
-        
+
+        # Desabilita fog, lighting, depth test para texto 2D limpo
+        fog_was_enabled = glIsEnabled(GL_FOG)
+        if fog_was_enabled:
+            glDisable(GL_FOG)
+
         glDisable(GL_LIGHTING)
         glDisable(GL_DEPTH_TEST)
-        
-        # Sombra (preto)
+
+        # Sombra (preto puro)
         glColor3f(0.0, 0.0, 0.0)
         glRasterPos2f(x + 1, y - 1)
         font = GLUT_BITMAP_HELVETICA_18 if size >= 18 else GLUT_BITMAP_8_BY_13
         for ch in text:
             glutBitmapCharacter(font, ord(ch))
-        
-        # Texto (branco)
+
+        # Texto (branco puro)
         glColor3f(1.0, 1.0, 1.0)
         glRasterPos2f(x, y)
         for ch in text:
             glutBitmapCharacter(font, ord(ch))
-        
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
-        
+        if fog_was_enabled:
+            glEnable(GL_FOG)
+
         glPopMatrix()
         glMatrixMode(GL_PROJECTION)
         glPopMatrix()
@@ -156,21 +163,7 @@ class UI:
             y -= 32
             fps = perf_stats.get('fps', 0.0)
             frame_time = perf_stats.get('frame_time_ms', 0.0)
-
-            # Cor baseada em performance
-            if fps >= 90:
-                fps_color = (0.2, 1.0, 0.2)  # Verde (excelente)
-            elif fps >= 60:
-                fps_color = (1.0, 1.0, 0.2)  # Amarelo (bom)
-            elif fps >= 30:
-                fps_color = (1.0, 0.6, 0.2)  # Laranja (razoável)
-            else:
-                fps_color = (1.0, 0.2, 0.2)  # Vermelho (ruim)
-
-            # Desenha FPS com cor apropriada
-            glColor3f(*fps_color)
             UI.draw_text(20, y, f"FPS: {fps:.1f} ({frame_time:.1f}ms)", 16)
-            glColor3f(1.0, 1.0, 1.0)  # Restaura cor branca
 
         # Status de áudio (canto superior direito)
         if sound_manager:
@@ -352,13 +345,13 @@ class UI:
         glDisable(GL_BLEND)
         
         # Textos do menu
-        UI.draw_text(cx - 160, cy + 120, "🎮 BOXPUSH 3D SOKOBAN 🎮", 24)
-        UI.draw_text(cx - 120, cy + 80, 
+        UI.draw_text(cx - 160, cy + 120, "BOXPUSH 3D SOKOBAN", 24)
+        UI.draw_text(cx - 180, cy + 80,
             "Empurre as caixas para os objetivos!", 18)
-        UI.draw_text(cx - 80, cy + 50, "🎯 5 NÍVEIS DESAFIADORES 🎯", 16)
-        
-        UI.draw_text(cx - 100, cy + 10, "⏎ ENTER - Começar Jogo", 18)
-        UI.draw_text(cx - 60, cy - 20, "⎋ ESC - Sair", 18)
+        UI.draw_text(cx - 120, cy + 50, "5 NIVEIS DESAFIADORES", 16)
+
+        UI.draw_text(cx - 100, cy + 10, "ENTER - Comecar Jogo", 18)
+        UI.draw_text(cx - 60, cy - 20, "ESC - Sair", 18)
         
         UI.draw_text(cx - 180, cy - 60, 
             "Controles: WASD=Mover | SHIFT=Correr | Mouse=Olhar | Espaço=Empurrar", 
