@@ -73,11 +73,11 @@ class SoundManager:
             self.enabled = True
             SoundManager._initialized = True
         except pygame.error as e:
-            print(f"⚠️ Sistema de áudio indisponível: {e}")
-            print("ℹ️ O jogo continuará sem som")
+            print(f"[WARNING] Sistema de audio indisponivel: {e}")
+            print("[INFO] O jogo continuara sem som")
             self.enabled = False
         except Exception as e:
-            print(f"❌ Erro inesperado ao inicializar áudio: {e}")
+            print(f"[ERROR] Erro inesperado ao inicializar audio: {e}")
             import traceback
             traceback.print_exc()
             self.enabled = False
@@ -122,7 +122,7 @@ class SoundManager:
 
             return sound
         except (pygame.error, ValueError, TypeError) as e:
-            print(f"⚠️ Erro ao gerar tom de áudio: {e}")
+            print(f"[WARNING] Erro ao gerar tom de audio: {e}")
             return None
     
     def _generate_push_sound(self):
@@ -368,9 +368,9 @@ class SoundManager:
                 else:
                     self.current_music = music  # Armazena mas não toca
             except pygame.error as e:
-                print(f"⚠️ Erro ao tocar música: {e}")
+                print(f"[WARNING] Erro ao tocar musica: {e}")
             except Exception as e:
-                print(f"❌ Erro inesperado ao tocar música: {e}")
+                print(f"[ERROR] Erro inesperado ao tocar musica: {e}")
     
     def stop_music(self):
         """Para a música de fundo"""
@@ -379,7 +379,7 @@ class SoundManager:
                 self.current_music.stop()
                 self.current_music = None
             except pygame.error as e:
-                print(f"⚠️ Erro ao parar música: {e}")
+                print(f"[WARNING] Erro ao parar musica: {e}")
                 self.current_music = None
     
     def set_music_volume(self, volume):
@@ -393,7 +393,7 @@ class SoundManager:
             try:
                 self.current_music.set_volume(volume)
             except pygame.error as e:
-                print(f"⚠️ Erro ao definir volume: {e}")
+                print(f"[WARNING] Erro ao definir volume: {e}")
     
     def play(self, sound_name):
         """
@@ -410,7 +410,7 @@ class SoundManager:
             try:
                 sound.play()
             except pygame.error as e:
-                print(f"⚠️ Erro ao tocar som '{sound_name}': {e}")
+                print(f"[WARNING] Erro ao tocar som '{sound_name}': {e}")
     
     def toggle_music(self):
         """Liga/desliga música de fundo"""
