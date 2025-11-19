@@ -76,7 +76,7 @@ class GameLogger:
             file_handler.setFormatter(formatter)
             self.root_logger.addHandler(file_handler)
         except Exception as e:
-            print(f"⚠️ Não foi possível criar arquivo de log: {e}")
+            print(f"[WARNING] Nao foi possivel criar arquivo de log: {e}")
 
         # Handler para arquivo de erros (ERROR e acima)
         try:
@@ -87,7 +87,7 @@ class GameLogger:
             error_handler.setFormatter(formatter)
             self.root_logger.addHandler(error_handler)
         except Exception as e:
-            print(f"⚠️ Não foi possível criar arquivo de erros: {e}")
+            print(f"[WARNING] Nao foi possivel criar arquivo de erros: {e}")
 
         GameLogger._initialized = True
         self.root_logger.info("Sistema de logging inicializado")

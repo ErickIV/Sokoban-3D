@@ -178,13 +178,13 @@ class UI:
             audio_x = WINDOW_WIDTH - 150
 
             # Status da música
-            music_status = "🎵 ON" if sound_manager.music_enabled else "🔇 OFF"
-            UI.draw_text(audio_x, audio_y, f"M: {music_status}", 16)
+            music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
+            UI.draw_text(audio_x, audio_y, f"Music: {music_status}", 16)
 
             # Status dos sons
             audio_y -= 28
-            sfx_status = "🔊 ON" if sound_manager.sfx_enabled else "🔇 OFF"
-            UI.draw_text(audio_x, audio_y, f"N: {sfx_status}", 16)
+            sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
+            UI.draw_text(audio_x, audio_y, f"Sound: {sfx_status}", 16)
 
         # Dicas de gameplay
         if show_hints:
@@ -370,10 +370,10 @@ class UI:
         # Status de áudio
         if sound_manager:
             audio_y = cy - 120
-            music_status = "🎵 ON" if sound_manager.music_enabled else "🔇 OFF"
-            sfx_status = "🔊 ON" if sound_manager.sfx_enabled else "🔇 OFF"
-            UI.draw_text(cx - 100, audio_y, 
-                f"Música: {music_status} | Sons: {sfx_status}", 16)
+            music_status = "[ON]" if sound_manager.music_enabled else "[OFF]"
+            sfx_status = "[ON]" if sound_manager.sfx_enabled else "[OFF]"
+            UI.draw_text(cx - 100, audio_y,
+                f"Music: {music_status} | Sound: {sfx_status}", 16)
         
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
