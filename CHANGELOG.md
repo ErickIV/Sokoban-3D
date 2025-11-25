@@ -4,6 +4,35 @@ Todas as mudanças notáveis do projeto serão documentadas aqui.
 
 ---
 
+## [v1.2.0] - 2025-11-25
+
+### 🎨 Visual Overhaul (Major)
+- **Texturas Realistas**: Implementado ruído procedural para paredes, chão e caixas (substituindo cores sólidas).
+- **Grama 3D**: Adicionadas partículas de grama no chão para maior imersão.
+- **Nuvens Melhoradas**: Sistema de nuvens "multi-puff" com maior variedade e realismo.
+- **Partículas de Sucesso**: Efeitos visuais (ouro, ciano, magenta) com animação flutuante ao completar objetivos.
+- **Menu Estilizado**: Novo design com gradientes, sombras e tipografia melhorada.
+
+### 🖥️ Interface de Usuário (UI)
+- **Menu Principal Interativo**: Botões funcionais com efeitos de hover e clique.
+- **Menu de Configurações**:
+  - **Sliders**: Controle deslizante para Volume de Música, Efeitos e Sensibilidade do Mouse.
+  - **Interatividade**: Suporte a clique e arraste (drag) nos sliders.
+  - **Botão Voltar**: Navegação fluida entre menus.
+- **Centralização de Texto**: Implementado cálculo preciso de largura de texto (`glutBitmapWidth`) para centralização perfeita em botões.
+
+### 🐛 Correções de Bugs
+- **Fix Crítico**: Resolvido `SyntaxError` e `IndentationError` em `main.py` causados por edição incompleta.
+- **Fix Eventos**: Corrigida lógica de eventos duplicada que impedia o funcionamento do botão "VOLTAR".
+- **Fix Texto**: Corrigido `TypeError` no cálculo de largura de texto substituindo `glutBitmapLength` por loop manual.
+- **Fix Renderização**: Restauradas definições de métodos corrompidos em `renderer.py`.
+
+### 🔧 Melhorias Técnicas
+- **Refatoração de Eventos**: Lógica de `handle_events` em `main.py` reescrita para maior clareza e robustez.
+- **Abstração de UI**: Novos métodos em `ui.py` (`draw_slider`, `get_text_width`) para componentes reutilizáveis.
+
+---
+
 ## [v1.1.1] - 2025-10-15
 
 ### 🐛 Correções de Bugs (ALTA PRIORIDADE)

@@ -27,6 +27,7 @@ SONS IMPLEMENTADOS:
 
 import numpy as np
 import pygame
+from config import *
 
 
 class SoundManager:
@@ -53,7 +54,9 @@ class SoundManager:
         self.music_tracks = {}  # Músicas de fundo
         self.current_music = None
         self.current_music_key = None  # Armazena qual música está tocando
-        self.current_music_volume = 0.2  # Volume atual da música
+        self.current_music_key = None  # Armazena qual música está tocando
+        self.current_music_volume = DEFAULT_MUSIC_VOLUME
+        self.sfx_volume = DEFAULT_SFX_VOLUME
         
         # Controles de áudio
         self.music_enabled = True
@@ -334,13 +337,13 @@ class SoundManager:
         if is_menu or level_index == 'menu':
             # Música do menu
             music = self.music_tracks.get('menu')
-            volume = 0.4  # 40% para o menu (mais alta)
+            volume = self.current_music_volume * 1.5  # Boost para menu
             music_key = 'menu'
         else:
             # Usa módulo para repetir músicas se houver mais fases que músicas
             track_index = level_index % 5  # 5 músicas de fases
             music = self.music_tracks.get(track_index)
-            volume = 0.2  # 20% para as fases (baixinha)
+            volume = self.current_music_volume
             music_key = track_index
         
         if music:
@@ -398,6 +401,7 @@ class SoundManager:
         sound = self.sounds.get(sound_name)
         if sound:
             try:
+                sound.set_volume(self.sfx_volume)
                 sound.play()
             except Exception as e:
                 pass
@@ -448,7 +452,33 @@ class SoundManager:
             volume: Volume de 0.0 a 1.0
         """
         if self.enabled:
-            pygame.mixer.music.set_volume(volume)
+            self.set_music_volume(volume)
+            self.set_sfx_volume(volume)
+
+    def set_music_volume(self, volume):
+        """
+        Define volume da música.
+        
+        Args:
+            volume: Volume de 0.0 a 1.0
+        """
+        self.current_music_volume = volume
+        if self.enabled and self.current_music:
+            try:
+                self.current_music.set_volume(volume)
+            except Exception as e:
+                pass
+
+    def set_sfx_volume(self, volume):
+        """
+        Define volume dos efeitos sonoros.
+        
+        Args:
+            volume: Volume de 0.0 a 1.0
+        """
+        self.sfx_volume = volume
+        # Atualiza volume de sons que possam estar tocando (opcional, mas bom para loop)
+        # Como os sons são curtos, apenas definir a variável para o próximo play é suficiente
 
 
 # Instância global

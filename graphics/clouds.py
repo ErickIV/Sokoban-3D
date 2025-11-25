@@ -49,7 +49,7 @@ import math
 class Cloud:
     """Representa uma nuvem individual no céu"""
     
-    def __init__(self, x, y, z, size, speed):
+    def __init__(self, x, y, z, size, speed, texture_index):
         """
         Inicializa uma nuvem
         
@@ -57,6 +57,7 @@ class Cloud:
             x, y, z: Posição inicial
             size: Tamanho da nuvem (escala)
             speed: Velocidade de movimento
+            texture_index: Índice da textura a ser usada
         """
         self.initial_x = x
         self.initial_z = z
@@ -65,6 +66,7 @@ class Cloud:
         self.z = z
         self.size = size
         self.speed = speed
+        self.texture_index = texture_index
         self.time_offset = random.uniform(0, 100)  # Offset de tempo aleatório
     
     def update(self, dt, wind_speed=1.0, total_time=0.0):
@@ -99,8 +101,12 @@ class CloudSystem:
         """
         self.clouds = []
         self.wind_speed = wind_speed
-        self.texture_id = None
+        self.texture_ids = [] # Lista de texturas
         self.total_time = 0.0  # Tempo acumulado para animação
+        
+        # Gera 4 variações de texturas de nuvem
+        for i in range(4):
+            self.texture_ids.append(self._create_cloud_texture(seed=i*100))
         
         # Gera nuvens distribuídas em círculo (360°)
         for i in range(num_clouds):
@@ -114,42 +120,74 @@ class CloudSystem:
             
             size = random.uniform(4, 8)
             speed = random.uniform(0.5, 1.2)
+            tex_idx = random.randint(0, 3) # Escolhe uma textura aleatória
             
-            self.clouds.append(Cloud(x, y, z, size, speed))
-        
-        # Cria textura procedimental
-        self._create_cloud_texture()
+            self.clouds.append(Cloud(x, y, z, size, speed, tex_idx))
     
-    def _create_cloud_texture(self):
+    def _create_cloud_texture(self, seed):
         """
         Cria uma textura procedimental para as nuvens
-        Usa gradiente radial com ruído para aparência orgânica
+        Usa múltiplos 'puffs' (metaballs) para criar formas de nuvem cumulus fofas.
         """
         size = 128
-        texture_data = []
+        # Inicializa buffer de pixels (RGBA) zerado
+        pixels = [[0.0 for _ in range(size)] for _ in range(size)]
         
+        rng = random.Random(seed) # RNG local para consistência por textura
+        
+        # Gera vários "puffs" (círculos suaves) para formar a nuvem
+        # Varia o número de puffs para formas diferentes
+        num_puffs = rng.randint(12, 20)
+        puffs = []
+        for _ in range(num_puffs):
+            # Posições concentradas no centro mas com variação
+            px = size/2 + rng.uniform(-size/3, size/3)
+            py = size/2 + rng.uniform(-size/4, size/4) # Mais achatada horizontalmente
+            radius = rng.uniform(size/8, size/4)
+            puffs.append((px, py, radius))
+            
+        # Renderiza os puffs no buffer
         for y in range(size):
             for x in range(size):
-                # Coordenadas normalizadas (-1 a 1)
-                nx = (x / size) * 2 - 1
-                ny = (y / size) * 2 - 1
+                max_alpha = 0.0
                 
-                # Distância do centro (gradiente radial)
-                dist = math.sqrt(nx*nx + ny*ny)
+                # Para cada pixel, verifica contribuição de cada puff
+                for px, py, radius in puffs:
+                    dx = x - px
+                    dy = y - py
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    
+                    if dist < radius:
+                        # Gradiente suave (esfera)
+                        # Falloff quadrático para bordas mais macias mas definidas
+                        norm_dist = dist / radius
+                        alpha = 1.0 - (norm_dist * norm_dist)
+                        max_alpha = max(max_alpha, alpha)
                 
-                # Adiciona ruído pseudo-aleatório
-                noise = math.sin(x * 0.1) * math.cos(y * 0.1) * 0.2
+                pixels[y][x] = max_alpha
+
+        # Converte para formato de bytes OpenGL
+        texture_data = []
+        for y in range(size):
+            for x in range(size):
+                alpha_val = pixels[y][x]
                 
-                # Alpha baseado na distância (fade nas bordas)
-                alpha = max(0.0, min(1.0, 1.0 - dist + noise))
-                alpha = int(alpha * 255)
+                # Aplica threshold para evitar "fumaça" muito fraca nas bordas
+                # Deixa a nuvem mais definida
+                if alpha_val < 0.1:
+                    alpha_val = 0.0
+                else:
+                    # Suaviza a transição após o corte
+                    alpha_val = min(1.0, alpha_val * 1.2)
                 
-                # Cor branca com alpha variável
-                texture_data.extend([255, 255, 255, alpha])
+                a = int(alpha_val * 255)
+                
+                # Cor branca pura (255, 255, 255)
+                texture_data.extend([255, 255, 255, a])
         
         # Cria textura OpenGL
-        self.texture_id = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id)
+        tex_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, tex_id)
         
         # Parâmetros da textura
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
@@ -162,6 +200,8 @@ class CloudSystem:
             GL_TEXTURE_2D, 0, GL_RGBA, size, size, 0,
             GL_RGBA, GL_UNSIGNED_BYTE, bytes(texture_data)
         )
+        
+        return tex_id
     
     def update(self, dt):
         """
@@ -185,53 +225,64 @@ class CloudSystem:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         
+        # Desabilita iluminação para as nuvens (elas devem ser brancas/brilhantes)
+        glDisable(GL_LIGHTING)
+        
         # Desabilita depth write (nuvens não devem bloquear outras nuvens)
         glDepthMask(GL_FALSE)
         
         # Habilita textura
         glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id)
         
         # Material das nuvens (branco brilhante)
         glColor4f(1.0, 1.0, 1.0, 0.8)
         
-        for cloud in self.clouds:
-            glPushMatrix()
+        # Renderiza nuvens agrupadas por textura para minimizar trocas de estado
+        for tex_idx, tex_id in enumerate(self.texture_ids):
+            glBindTexture(GL_TEXTURE_2D, tex_id)
             
-            # Posição da nuvem (já atualizada com movimento)
-            pos_x = cloud.x
-            pos_y = cloud.y
-            pos_z = cloud.z
+            # Filtra nuvens que usam esta textura
+            clouds_with_texture = [c for c in self.clouds if c.texture_index == tex_idx]
             
-            glTranslatef(pos_x, pos_y, pos_z)
-            
-            # Billboard: calcula vetor da câmera para a nuvem
-            dx = camera_pos[0] - pos_x
-            dz = camera_pos[2] - pos_z
-            angle = math.degrees(math.atan2(dx, dz))
-            
-            # Rotaciona para encarar a câmera
-            glRotatef(angle, 0, 1, 0)
-            
-            # Escala
-            s = cloud.size
-            
-            # Desenha quad (plano retangular)
-            glBegin(GL_QUADS)
-            glTexCoord2f(0, 0); glVertex3f(-s, -s*0.5, 0)
-            glTexCoord2f(1, 0); glVertex3f( s, -s*0.5, 0)
-            glTexCoord2f(1, 1); glVertex3f( s,  s*0.5, 0)
-            glTexCoord2f(0, 1); glVertex3f(-s,  s*0.5, 0)
-            glEnd()
-            
-            glPopMatrix()
+            for cloud in clouds_with_texture:
+                glPushMatrix()
+                
+                # Posição da nuvem (já atualizada com movimento)
+                pos_x = cloud.x
+                pos_y = cloud.y
+                pos_z = cloud.z
+                
+                glTranslatef(pos_x, pos_y, pos_z)
+                
+                # Billboard: calcula vetor da câmera para a nuvem
+                dx = camera_pos[0] - pos_x
+                dz = camera_pos[2] - pos_z
+                angle = math.degrees(math.atan2(dx, dz))
+                
+                # Rotaciona para encarar a câmera
+                glRotatef(angle, 0, 1, 0)
+                
+                # Escala
+                s = cloud.size
+                
+                # Desenha quad (plano retangular)
+                glBegin(GL_QUADS)
+                glTexCoord2f(0, 0); glVertex3f(-s, -s*0.5, 0)
+                glTexCoord2f(1, 0); glVertex3f( s, -s*0.5, 0)
+                glTexCoord2f(1, 1); glVertex3f( s,  s*0.5, 0)
+                glTexCoord2f(0, 1); glVertex3f(-s,  s*0.5, 0)
+                glEnd()
+                
+                glPopMatrix()
         
         # Restaura estados OpenGL
         glDisable(GL_TEXTURE_2D)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
+        glEnable(GL_LIGHTING)
     
     def cleanup(self):
         """Libera recursos da GPU"""
-        if self.texture_id:
-            glDeleteTextures([self.texture_id])
+        for tex_id in self.texture_ids:
+            glDeleteTextures([tex_id])
+        self.texture_ids = []

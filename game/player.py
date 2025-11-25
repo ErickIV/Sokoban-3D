@@ -178,3 +178,8 @@ class Player:
         """Reseta rotação da câmera"""
         self.camera_pitch = 0.0
         self.camera_yaw = 0.0
+    
+    def set_sensitivity(self, value):
+        """Define sensibilidade do mouse"""
+        global MOUSE_SENSITIVITY
+        MOUSE_SENSITIVITY = value

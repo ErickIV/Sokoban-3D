@@ -45,6 +45,7 @@ from OpenGL.GLUT import glutInit
 # Importa módulos do jogo
 from config import *
 from graphics.renderer import Renderer
+from graphics.ui import UI
 from game.player import Player
 from game.level import Level
 from game.levels_data import get_level_count
@@ -58,6 +59,7 @@ class GameState:
         self.state = GAME_STATE_MENU
         self.last_push_time = 0.0
         self.victory_time = 0.0
+        self.settings_option = 0  # 0: Music, 1: SFX, 2: Sensitivity
     
     def is_menu(self):
         return self.state == GAME_STATE_MENU
@@ -70,6 +72,9 @@ class GameState:
     
     def is_final_victory(self):
         return self.state == GAME_STATE_FINAL_VICTORY
+
+    def is_settings(self):
+        return self.state == GAME_STATE_SETTINGS
     
     def set_menu(self):
         self.state = GAME_STATE_MENU
@@ -83,6 +88,9 @@ class GameState:
     
     def set_final_victory(self):
         self.state = GAME_STATE_FINAL_VICTORY
+
+    def set_settings(self):
+        self.state = GAME_STATE_SETTINGS
 
 
 class Game:
@@ -124,6 +132,20 @@ class Game:
         
         # Inicia música do menu
         self.sound.play_music('menu', is_menu=True)
+
+    def start_game(self):
+        """Inicia uma nova partida"""
+        self.level.load_level(0)
+        self.player.set_position(*self.level.spawn_position)
+        self.player.reset_camera()
+        self.game_state.set_playing()
+        self.sound.play('level_start')
+        self.sound.play_music(0)  # Música da fase 1
+        pygame.event.set_grab(True)
+        pygame.mouse.set_visible(False)
+        pygame.mouse.set_pos(
+            (self.window_width // 2, self.window_height // 2)
+        )
     
     def handle_events(self):
         """Processa eventos do Pygame"""
@@ -134,48 +156,72 @@ class Game:
             elif event.type == KEYDOWN:
                 # ESC sempre sai
                 if event.key == K_ESCAPE:
-                    return False
+                    if self.game_state.is_settings():
+                        self.game_state.set_menu()
+                        self.sound.play('menu_select')
+                    elif self.game_state.is_menu():
+                        return False
+                    else:
+                        self.game_state.set_menu()
+                        self.sound.stop_music()
+                        self.sound.play_music('menu', is_menu=True)
+                        pygame.event.set_grab(False)
+                        pygame.mouse.set_visible(True)
                 
                 # R: Reset nível (apenas durante jogo)
                 elif event.key == K_r and self.game_state.is_playing():
                     self.level.reload_current_level()
                     self.player.set_position(*self.level.spawn_position)
                     self.player.reset_camera()
-                    # Reinicia música da fase atual
                     self.sound.play_music(self.level.current_level_index)
                 
-                # T: Teleporte de emergência (caso fique preso na parede)
+                # T: Teleporte de emergência
                 elif event.key == K_t and self.game_state.is_playing():
                     self.player.set_position(*self.level.spawn_position)
                     self.player.reset_camera()
                 
-                # M: Toggle música de fundo
+                # M: Toggle música
                 elif event.key == K_m:
                     self.sound.toggle_music()
                 
-                # N: Toggle sons de efeito
+                # N: Toggle sons
                 elif event.key == K_n:
                     self.sound.toggle_sfx()
                 
+                # O: Abrir configurações
+                elif event.key == K_o and self.game_state.is_menu():
+                    self.game_state.set_settings()
+                
+                # Navegação Menu Configurações (Teclado)
+                elif self.game_state.is_settings():
+                    if event.key == K_UP:
+                        self.game_state.settings_option = (self.game_state.settings_option - 1) % 3
+                        self.sound.play('menu_select')
+                    elif event.key == K_DOWN:
+                        self.game_state.settings_option = (self.game_state.settings_option + 1) % 3
+                        self.sound.play('menu_select')
+                    elif event.key == K_LEFT or event.key == K_RIGHT:
+                        direction = -1 if event.key == K_LEFT else 1
+                        if self.game_state.settings_option == 0:
+                            new_vol = max(0.0, min(1.0, self.sound.current_music_volume + direction * 0.1))
+                            self.sound.set_music_volume(new_vol)
+                        elif self.game_state.settings_option == 1:
+                            new_vol = max(0.0, min(1.0, self.sound.sfx_volume + direction * 0.1))
+                            self.sound.set_sfx_volume(new_vol)
+                            self.sound.play('menu_select')
+                        elif self.game_state.settings_option == 2:
+                            import config
+                            new_sens = max(0.01, min(0.5, config.MOUSE_SENSITIVITY + direction * 0.01))
+                            config.MOUSE_SENSITIVITY = new_sens
+                            self.player.set_sensitivity(new_sens)
+
                 # ENTER: Controle de fluxo
-                elif event.key == K_RETURN:
+                if event.key == K_RETURN:
                     self.sound.play('menu_select')
                     if self.game_state.is_menu():
-                        # Inicia jogo
-                        self.level.load_level(0)
-                        self.player.set_position(*self.level.spawn_position)
-                        self.player.reset_camera()
-                        self.game_state.set_playing()
-                        self.sound.play('level_start')
-                        self.sound.play_music(0)  # Música da fase 1
-                        pygame.event.set_grab(True)
-                        pygame.mouse.set_visible(False)
-                        pygame.mouse.set_pos(
-                            (self.window_width // 2, self.window_height // 2)
-                        )
+                        self.start_game()
                     
                     elif self.game_state.is_victory():
-                        # Próximo nível ou menu
                         next_index = self.level.get_next_level_index()
                         if next_index is not None:
                             self.level.load_level(next_index)
@@ -183,11 +229,11 @@ class Game:
                             self.player.reset_camera()
                             self.game_state.set_playing()
                             self.sound.play('level_start')
-                            self.sound.play_music(next_index)  # Música da próxima fase
+                            self.sound.play_music(next_index)
                         else:
                             self.game_state.set_menu()
                             self.sound.stop_music()
-                            self.sound.play_music('menu', is_menu=True)  # Volta música do menu
+                            self.sound.play_music('menu', is_menu=True)
                         
                         pygame.event.set_grab(True)
                         pygame.mouse.set_visible(False)
@@ -196,15 +242,47 @@ class Game:
                         )
                     
                     elif self.game_state.is_final_victory():
-                        # Volta ao menu
                         self.game_state.set_menu()
                         self.sound.stop_music()
-                        self.sound.play_music('menu', is_menu=True)  # Volta música do menu
+                        self.sound.play_music('menu', is_menu=True)
                         pygame.event.set_grab(False)
                         pygame.mouse.set_visible(True)
+
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mx, my = pygame.mouse.get_pos()
+                    gl_my = self.window_height - my
+                    
+                    if self.game_state.is_menu():
+                        action = UI.get_menu_action(mx, gl_my)
+                        if action == 'start':
+                            self.sound.play('menu_select')
+                            self.start_game()
+                        elif action == 'settings':
+                            self.sound.play('menu_select')
+                            self.game_state.set_settings()
+                        elif action == 'quit':
+                            return False
+                            
+                    elif self.game_state.is_settings():
+                        action, data = UI.get_settings_action(mx, gl_my)
+                        if action == 'slider_drag':
+                            s_id, val = data
+                            self._update_setting(s_id, val)
+                        elif action == 'back':
+                            self.game_state.set_menu()
+                            self.sound.play('menu_select')
+
+            elif event.type == MOUSEMOTION:
+                if pygame.mouse.get_pressed()[0] and self.game_state.is_settings():
+                    mx, my = pygame.mouse.get_pos()
+                    gl_my = self.window_height - my
+                    action, data = UI.get_settings_action(mx, gl_my)
+                    if action == 'slider_drag':
+                        s_id, val = data
+                        self._update_setting(s_id, val)
             
             elif event.type == VIDEORESIZE:
-                # Redimensionamento de janela
                 self.window_width, self.window_height = event.size
                 pygame.display.set_mode(
                     (self.window_width, self.window_height),
@@ -213,6 +291,24 @@ class Game:
                 Renderer.set_perspective(self.window_width, self.window_height)
         
         return True
+
+    def _update_setting(self, s_id, val):
+        """Helper para atualizar configurações"""
+        if s_id == 0: # Music
+            self.sound.set_music_volume(val)
+            self.game_state.settings_option = 0
+        elif s_id == 1: # SFX
+            self.sound.set_sfx_volume(val)
+            self.game_state.settings_option = 1
+        elif s_id == 2: # Sensitivity
+            import config
+            real_sens = 0.01 + val * (0.5 - 0.01)
+            config.MOUSE_SENSITIVITY = real_sens
+            self.player.set_sensitivity(real_sens)
+            self.game_state.settings_option = 2
+
+            
+
     
     def update_playing(self, dt, current_time):
         """Atualiza lógica durante o jogo"""
@@ -278,7 +374,7 @@ class Game:
     def render(self, current_time):
         """Renderiza frame atual"""
         if self.game_state.is_menu():
-            Renderer.render_menu(self.sound)
+            Renderer.render_menu(self.sound, pygame.mouse.get_pos())
         
         elif self.game_state.is_playing():
             Renderer.render_game_scene(self.level, self.player, current_time, self.sound)
@@ -288,6 +384,16 @@ class Game:
         
         elif self.game_state.is_final_victory():
             Renderer.render_final_victory()
+        
+        elif self.game_state.is_settings():
+            import config
+            Renderer.render_settings(
+                self.game_state.settings_option,
+                self.sound.current_music_volume,
+                self.sound.sfx_volume,
+                config.MOUSE_SENSITIVITY,
+                pygame.mouse.get_pos()
+            )
         
         pygame.display.flip()
     
@@ -333,6 +439,7 @@ def main():
     print("  M         - Música ON/OFF")
     print("  N         - Sons ON/OFF")
     print("  ENTER     - Avançar/Iniciar")
+    print("  O         - Configurações")
     print("  ESC       - Sair")
     print("=" * 60)
     print()

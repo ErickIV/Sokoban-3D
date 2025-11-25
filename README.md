@@ -46,25 +46,25 @@ Ambiente3D---BoxPush/
 - ✅ **Testabilidade**: Cada módulo pode ser testado independentemente
 - ✅ **Clean Code**: Seguindo boas práticas da indústria
 
-### 🎨 Gráficos Avançados
-- **Display Lists**: Otimização de ~90% na renderização de grama
+### 🎨 Gráficos Avançados (v1.2)
+- **Texturas Realistas**: Ruído procedural para paredes, chão e caixas (sem assets externos)
+- **Grama 3D**: Partículas de grama no chão para maior imersão
+- **Nuvens Volumétricas**: Sistema "multi-puff" com maior variedade e realismo
+- **Partículas de Sucesso**: Efeitos visuais (ouro, ciano, magenta) com animação flutuante
+- **Display Lists**: Otimização de ~90% na renderização
 - **Iluminação 3-Pontos**: Key Light + Fill Light + Rim Light
-- **Materiais PBR-like**: Paredes, caixas e chão com materiais realistas
-- **3200+ folhas de grama**: Renderizadas dinamicamente
-- **Sistema de partículas**: Efeitos visuais ao completar objetivos
-- **Nuvens procedurais animadas**: 15 nuvens com movimento senoidal em 360°
-- **Billboard rendering**: Nuvens sempre de frente para a câmera
-- **Crosshair dinâmica**: Orientação visual
+- **Materiais PBR-like**: Propriedades de reflexão e brilho ajustadas
 - **Sombras projetadas**: Profundidade e realismo
 
-### 🎵 Sistema de Áudio Completo
+### 🎵 Sistema de Áudio & UI (v1.2)
+- **Interface Interativa**: Menus com botões clicáveis e efeitos de hover
+- **Configurações Completas**: Sliders para volume (Música/SFX) e sensibilidade
 - **Síntese procedimental**: Todos os sons gerados por código (sem arquivos WAV)
 - **7 efeitos sonoros**: Push, blocked, box_on_target, victory, footsteps, etc.
 - **6 músicas 8-bit**: 5 trilhas de nível + 1 tema de menu (estilo Mario clássico)
 - **ADSR envelope**: Ataque/decay/sustain/release para qualidade profissional
 - **Controles independentes**: M (música) e N (efeitos sonoros)
 - **Padrão Singleton**: Gerenciador único de áudio
-- **HUD de status**: Indicadores visuais de música/sons ON/OFF
 
 ### 🎮 Jogabilidade
 - **5 níveis progressivos**: Do tutorial ao desafio final
@@ -240,14 +240,14 @@ Ponto de entrada e loop principal:
 
 ## 📊 Estatísticas do Projeto
 
-- **Linhas de Código**: ~3000+ linhas
-- **Módulos**: 14 arquivos Python
-- **Funções**: 100+ funções
-- **Classes**: 12 classes
+- **Linhas de Código**: ~3500+ linhas
+- **Módulos**: 15 arquivos Python
+- **Funções**: 120+ funções
+- **Classes**: 14 classes
 - **Níveis**: 5 níveis completos
 - **Efeitos Sonoros**: 7 sons procedurais
 - **Músicas**: 6 trilhas 8-bit
-- **Nuvens**: 15 nuvens animadas
+- **Nuvens**: Sistema dinâmico multi-puff
 - **Performance**: 120 FPS estáveis
 
 ## 🎯 Níveis Disponíveis

@@ -26,45 +26,45 @@ class Primitives:
         
         # Frente
         glNormal3f(0, 0, 1)
-        glVertex3f(-hs, -hs, hs)
-        glVertex3f(hs, -hs, hs)
-        glVertex3f(hs, hs, hs)
-        glVertex3f(-hs, hs, hs)
+        glTexCoord2f(0, 0); glVertex3f(-hs, -hs, hs)
+        glTexCoord2f(1, 0); glVertex3f(hs, -hs, hs)
+        glTexCoord2f(1, 1); glVertex3f(hs, hs, hs)
+        glTexCoord2f(0, 1); glVertex3f(-hs, hs, hs)
         
         # Trás
         glNormal3f(0, 0, -1)
-        glVertex3f(-hs, -hs, -hs)
-        glVertex3f(-hs, hs, -hs)
-        glVertex3f(hs, hs, -hs)
-        glVertex3f(hs, -hs, -hs)
+        glTexCoord2f(1, 0); glVertex3f(-hs, -hs, -hs)
+        glTexCoord2f(1, 1); glVertex3f(-hs, hs, -hs)
+        glTexCoord2f(0, 1); glVertex3f(hs, hs, -hs)
+        glTexCoord2f(0, 0); glVertex3f(hs, -hs, -hs)
         
         # Esquerda
         glNormal3f(-1, 0, 0)
-        glVertex3f(-hs, -hs, -hs)
-        glVertex3f(-hs, -hs, hs)
-        glVertex3f(-hs, hs, hs)
-        glVertex3f(-hs, hs, -hs)
+        glTexCoord2f(0, 0); glVertex3f(-hs, -hs, -hs)
+        glTexCoord2f(1, 0); glVertex3f(-hs, -hs, hs)
+        glTexCoord2f(1, 1); glVertex3f(-hs, hs, hs)
+        glTexCoord2f(0, 1); glVertex3f(-hs, hs, -hs)
         
         # Direita
         glNormal3f(1, 0, 0)
-        glVertex3f(hs, -hs, -hs)
-        glVertex3f(hs, hs, -hs)
-        glVertex3f(hs, hs, hs)
-        glVertex3f(hs, -hs, hs)
+        glTexCoord2f(0, 0); glVertex3f(hs, -hs, -hs)
+        glTexCoord2f(0, 1); glVertex3f(hs, hs, -hs)
+        glTexCoord2f(1, 1); glVertex3f(hs, hs, hs)
+        glTexCoord2f(1, 0); glVertex3f(hs, -hs, hs)
         
         # Topo
         glNormal3f(0, 1, 0)
-        glVertex3f(-hs, hs, -hs)
-        glVertex3f(-hs, hs, hs)
-        glVertex3f(hs, hs, hs)
-        glVertex3f(hs, hs, -hs)
+        glTexCoord2f(0, 1); glVertex3f(-hs, hs, -hs)
+        glTexCoord2f(0, 0); glVertex3f(-hs, hs, hs)
+        glTexCoord2f(1, 0); glVertex3f(hs, hs, hs)
+        glTexCoord2f(1, 1); glVertex3f(hs, hs, -hs)
         
         # Base
         glNormal3f(0, -1, 0)
-        glVertex3f(-hs, -hs, -hs)
-        glVertex3f(hs, -hs, -hs)
-        glVertex3f(hs, -hs, hs)
-        glVertex3f(-hs, -hs, hs)
+        glTexCoord2f(0, 0); glVertex3f(-hs, -hs, -hs)
+        glTexCoord2f(1, 0); glVertex3f(hs, -hs, -hs)
+        glTexCoord2f(1, 1); glVertex3f(hs, -hs, hs)
+        glTexCoord2f(0, 1); glVertex3f(-hs, -hs, hs)
         
         glEnd()
     
@@ -101,10 +101,11 @@ class Primitives:
             glTranslatef(gx, -1.0, gz)
             glRotatef(rotation, 0, 1, 0)
             
-            # Cor verde com variação
-            r = 0.1 + color_var * 0.1
-            g = 0.6 + color_var * 0.3
-            b = 0.1 + color_var * 0.05
+            # Cor verde mais clara para combinar com o novo chão
+            # Base: (0.4, 0.8, 0.4) com variação
+            r = 0.3 + color_var * 0.1
+            g = 0.75 + color_var * 0.2
+            b = 0.3 + color_var * 0.1
             glColor3f(r, g, b)
             
             # Quad vertical (folha)
@@ -150,11 +151,12 @@ class Primitives:
         glScalef(40.0, 0.02, 40.0)
         
         hs = 0.5
+        tiling = 20.0  # Repete a textura 20 vezes
         glBegin(GL_QUADS)
-        glVertex3f(-hs, hs, -hs)
-        glVertex3f(-hs, hs, hs)
-        glVertex3f(hs, hs, hs)
-        glVertex3f(hs, hs, -hs)
+        glTexCoord2f(0, 0); glVertex3f(-hs, hs, -hs)
+        glTexCoord2f(0, tiling); glVertex3f(-hs, hs, hs)
+        glTexCoord2f(tiling, tiling); glVertex3f(hs, hs, hs)
+        glTexCoord2f(tiling, 0); glVertex3f(hs, hs, -hs)
         glEnd()
         
         glPopMatrix()

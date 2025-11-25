@@ -42,7 +42,9 @@ from config import *
 from .materials import Materials, Lighting
 from .primitives import Primitives
 from .ui import UI
+from .ui import UI
 from .clouds import CloudSystem
+from .textures import TextureManager
 
 
 class Renderer:
@@ -74,6 +76,12 @@ class Renderer:
         
         # Cor de fundo (céu)
         glClearColor(*SKY_COLOR)
+
+        # Inicializa Texturas
+        tm = TextureManager()
+        tm.load_texture('wall')
+        tm.load_texture('box')
+        tm.load_texture('floor')
     
     @staticmethod
     def set_perspective(width, height):
@@ -117,7 +125,11 @@ class Renderer:
         glPushMatrix()
         glTranslatef(x, y + 0.0, z)
         glScalef(1.0, 2.0, 1.0)
+        
+        TextureManager().bind('wall')
         Primitives.draw_unit_cube()
+        TextureManager().bind(None)  # Unbind
+        
         glPopMatrix()
     
     @staticmethod
@@ -138,7 +150,8 @@ class Renderer:
             color = (1.0, 0.84, 0.0, 1.0)  # Dourado
             shininess = 64.0
         elif status == 'pushable':
-            color = (0.2, 0.9, 0.2, 1.0)  # Verde
+            # Amarelo Claro para indicar interação (como solicitado)
+            color = (1.0, 1.0, 0.2, 1.0)
             shininess = 32.0
         elif status == 'blocked':
             color = (0.9, 0.2, 0.2, 1.0)  # Vermelho
@@ -148,7 +161,10 @@ class Renderer:
             shininess = 32.0
         
         Materials.apply_box_material(color, shininess)
+        
+        TextureManager().bind('box')
         Primitives.draw_unit_cube()
+        TextureManager().bind(None)
         
         # Restaura material padrão
         Materials.apply_wall_material()
@@ -217,17 +233,27 @@ class Renderer:
             elapsed = current_time - start_t
             
             if elapsed < PARTICLE_LIFETIME:
-                # Animação de partículas em espiral
+                # Animação melhorada: Partículas flutuantes e cintilantes
                 for i in range(PARTICLE_COUNT):
-                    angle = (i / PARTICLE_COUNT) * 2 * math.pi
-                    offset = elapsed * 2.0
+                    angle = (i / PARTICLE_COUNT) * 2 * math.pi + (elapsed * 2)
+                    radius = 0.5 + math.sin(elapsed * 3 + i) * 0.2
                     
-                    px = x + math.cos(angle + elapsed * 3) * offset
-                    pz = z + math.sin(angle + elapsed * 3) * offset
-                    py = y - 0.2 + math.sin(elapsed * 5) * 0.3 + 0.3
+                    px = x + math.cos(angle) * radius
+                    pz = z + math.sin(angle) * radius
+                    py = y + elapsed * 1.5 + math.sin(elapsed * 10 + i) * 0.1
                     
-                    # Cor amarela brilhante
-                    Primitives.draw_particle(px, py, pz, 0.1, (1.0, 1.0, 0.0))
+                    # Cores variadas (Dourado, Cyan, Magenta)
+                    colors = [
+                        (1.0, 0.8, 0.0), # Dourado
+                        (0.0, 1.0, 1.0), # Cyan
+                        (1.0, 0.0, 1.0)  # Magenta
+                    ]
+                    color = colors[i % 3]
+                    
+                    # Tamanho pulsante
+                    size = 0.08 + math.sin(elapsed * 10) * 0.03
+                    
+                    Primitives.draw_particle(px, py, pz, size, color)
         
         glEnable(GL_LIGHTING)
     
@@ -252,7 +278,9 @@ class Renderer:
             level.clouds.render((player.x, player.y, player.z))
         
         # Desenha chão
+        TextureManager().bind('floor')
         Primitives.draw_floor()
+        TextureManager().bind(None)
         
         # Desenha paredes
         for (x, y, z) in level.walls:
@@ -326,15 +354,24 @@ class Renderer:
         Primitives.draw_target_marker(-1, 0, 0)
     
     @staticmethod
-    def render_menu(sound_manager=None):
+    def render_settings(selected_option, music_vol, sfx_vol, sensitivity, mouse_pos=(0,0)):
+        """
+        Renderiza menu de configurações.
+        """
+        Renderer.render_menu_background()
+        UI.draw_settings_menu(selected_option, music_vol, sfx_vol, sensitivity, mouse_pos)
+
+    @staticmethod
+    def render_menu(sound_manager=None, mouse_pos=(0,0)):
         """
         Renderiza menu principal completo
         
         Args:
             sound_manager: Gerenciador de som
+            mouse_pos: Posição do mouse
         """
         Renderer.render_menu_background()
-        UI.draw_menu(sound_manager)
+        UI.draw_menu(sound_manager, mouse_pos)
     
     @staticmethod
     def render_victory(level, player, current_time):

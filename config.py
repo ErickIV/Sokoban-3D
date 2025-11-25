@@ -25,6 +25,8 @@ PLAYER_RADIUS = 0.35        # Raio de colisão no plano XZ
 MOVE_SPEED = 3.0            # Velocidade de movimento (m/s)
 RUN_MULTIPLIER = 1.65       # Multiplicador ao segurar SHIFT
 MOUSE_SENSITIVITY = 0.12    # Sensibilidade do mouse (deg/pixel)
+DEFAULT_MUSIC_VOLUME = 0.3  # Volume padrão da música
+DEFAULT_SFX_VOLUME = 0.4    # Volume padrão dos efeitos
 PUSH_COOLDOWN = 0.18        # Intervalo entre empurrões (segundos)
 GRID_SIZE = 1.0             # Tamanho da grade do mundo
 
@@ -34,7 +36,9 @@ GRID_SIZE = 1.0             # Tamanho da grade do mundo
 GAME_STATE_MENU = 0
 GAME_STATE_PLAYING = 1
 GAME_STATE_WIN = 2
+GAME_STATE_WIN = 2
 GAME_STATE_FINAL_VICTORY = 3
+GAME_STATE_SETTINGS = 4
 
 # -----------------------------
 # Configurações de Renderização
