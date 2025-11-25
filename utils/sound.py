@@ -66,18 +66,24 @@ class SoundManager:
             # Verifica se pygame já foi inicializado
             if not pygame.get_init():
                 pygame.init()
-            
+
             # Reinicializa mixer com configurações específicas
             pygame.mixer.quit()
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-            
+
             self._generate_all_sounds()
             self._generate_music_tracks()
             self.enabled = True
             SoundManager._initialized = True
+        except pygame.error as e:
+            print(f"[WARNING] Sistema de audio indisponivel: {e}")
+            print("[INFO] O jogo continuara sem som")
+            self.enabled = False
         except Exception as e:
+            print(f"[ERROR] Erro inesperado ao inicializar audio: {e}")
             import traceback
             traceback.print_exc()
+            self.enabled = False
     
     def _generate_tone(self, frequency, duration, volume=0.3):
         """
@@ -116,9 +122,10 @@ class SoundManager:
             sound = pygame.sndarray.make_sound(buf_stereo)
             # Mantém referência ao buffer para evitar garbage collection
             self._sound_buffers.append(buf_stereo)
-            
+
             return sound
-        except Exception as e:
+        except (pygame.error, ValueError, TypeError) as e:
+            print(f"[WARNING] Erro ao gerar tom de audio: {e}")
             return None
     
     def _generate_push_sound(self):
@@ -252,76 +259,75 @@ class SoundManager:
         return sound
     
     def _generate_music_tracks(self):
-        """Gera músicas de fundo estilo 8-bit para cada fase"""
-        # Frequências das notas (em Hz)
+        """Gera músicas de fundo estilo 8-bit relaxantes e agradáveis"""
+        # Frequências das notas (em Hz) - ampliado
         C4, D4, E4, F4, G4, A4, B4 = 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88
-        C5, D5, E5, F5, G5 = 523.25, 587.33, 659.25, 698.46, 783.99
-        
-        # Fase 1: Melodia alegre e simples
+        C5, D5, E5, F5, G5, A5 = 523.25, 587.33, 659.25, 698.46, 783.99, 880.00
+
+        # Fase 1: Melodia suave e relaxante (inspirada em Gymnopédie)
         track1 = [
-            (C4, 0.5), (E4, 0.5), (G4, 0.5), (C5, 0.5),
-            (E5, 0.25), (G4, 0.25), (C5, 0.5), (G4, 0.5),
-            (C4, 0.5), (E4, 0.5), (G4, 0.5), (E4, 0.5),
-            (C4, 1.0), (None, 0.5),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (D5, 0.5),
+            (E5, 1.0), (None, 0.25),
+            (G4, 0.75), (A4, 0.25), (C5, 0.5), (E5, 0.5),
+            (D5, 1.5), (None, 0.5),
+            (C5, 0.75), (B4, 0.25), (A4, 0.5), (G4, 0.5),
+            (E4, 1.0), (None, 0.5),
         ]
-        
-        # Fase 2: Mais rápida e energética
+
+        # Fase 2: Melodia mais alegre e fluida
         track2 = [
-            (G4, 0.25), (A4, 0.25), (B4, 0.25), (C5, 0.25),
-            (D5, 0.5), (C5, 0.25), (B4, 0.25),
-            (A4, 0.5), (G4, 0.5),
-            (E4, 0.25), (G4, 0.25), (C5, 0.5),
-            (G4, 1.0), (None, 0.5),
+            (C5, 0.5), (D5, 0.5), (E5, 0.5), (G5, 0.5),
+            (E5, 0.5), (D5, 0.5), (C5, 1.0),
+            (None, 0.25),
+            (A4, 0.5), (C5, 0.5), (E5, 0.5), (D5, 0.5),
+            (C5, 0.5), (A4, 0.5), (G4, 1.0),
+            (None, 0.5),
         ]
-        
-        # Fase 3: Misteriosa
+
+        # Fase 3: Melodia contemplativa (estilo minimalista)
         track3 = [
-            (A4, 0.5), (None, 0.25), (A4, 0.25),
-            (G4, 0.5), (F4, 0.5),
-            (E4, 0.75), (None, 0.25),
-            (D4, 0.5), (E4, 0.5),
-            (F4, 1.0), (None, 0.5),
+            (A4, 1.0), (None, 0.25), (G4, 0.75),
+            (F4, 1.0), (E4, 1.0),
+            (None, 0.5),
+            (D5, 0.75), (C5, 0.25), (A4, 1.0),
+            (G4, 1.5), (None, 0.5),
         ]
-        
-        # Fase 4: Desafiadora
+
+        # Fase 4: Melodia inspiradora mas calma
         track4 = [
-            (C5, 0.25), (B4, 0.25), (A4, 0.25), (G4, 0.25),
-            (A4, 0.5), (C5, 0.5),
-            (E5, 0.25), (D5, 0.25), (C5, 0.5),
-            (G4, 0.75), (None, 0.25),
-            (F4, 0.5), (E4, 0.5),
-            (D4, 1.0), (None, 0.5),
+            (G4, 0.5), (A4, 0.5), (C5, 0.75), (E5, 0.25),
+            (D5, 1.0), (C5, 0.5), (None, 0.25),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (A4, 0.5),
+            (G4, 1.5), (None, 0.5),
         ]
-        
-        # Fase 5 (final): Épica
+
+        # Fase 5 (final): Melodia vitoriosa mas tranquila
         track5 = [
-            (C5, 0.5), (G4, 0.25), (C5, 0.25),
-            (E5, 0.5), (D5, 0.5),
-            (C5, 0.25), (D5, 0.25), (E5, 0.25), (F5, 0.25),
-            (G5, 1.0),
-            (E5, 0.5), (C5, 0.5),
-            (G4, 1.0), (None, 0.5),
+            (C5, 0.75), (E5, 0.25), (G5, 0.5), (E5, 0.5),
+            (D5, 0.5), (E5, 0.5), (C5, 1.0),
+            (None, 0.25),
+            (A4, 0.5), (C5, 0.5), (D5, 0.5), (E5, 0.5),
+            (C5, 1.0), (G4, 0.5), (None, 0.25),
+            (C5, 2.0),
         ]
-        
-        # Gera todas as músicas
-        self.music_tracks[0] = self._generate_music_note_sequence(track1, tempo=140)
-        self.music_tracks[1] = self._generate_music_note_sequence(track2, tempo=160)
-        self.music_tracks[2] = self._generate_music_note_sequence(track3, tempo=120)
-        self.music_tracks[3] = self._generate_music_note_sequence(track4, tempo=150)
-        self.music_tracks[4] = self._generate_music_note_sequence(track5, tempo=130)
-        
-        # Música do menu: Cativante e chamativa
+
+        # Gera todas as músicas com tempos mais lentos (relaxantes)
+        self.music_tracks[0] = self._generate_music_note_sequence(track1, tempo=90)
+        self.music_tracks[1] = self._generate_music_note_sequence(track2, tempo=100)
+        self.music_tracks[2] = self._generate_music_note_sequence(track3, tempo=85)
+        self.music_tracks[3] = self._generate_music_note_sequence(track4, tempo=95)
+        self.music_tracks[4] = self._generate_music_note_sequence(track5, tempo=100)
+
+        # Música do menu: Acolhedora e suave
         menu_track = [
-            (C5, 0.5), (E5, 0.5), (G5, 0.5), (E5, 0.5),
-            (D5, 0.5), (F5, 0.5), (A4, 0.5), (D5, 0.5),
-            (C5, 0.5), (E5, 0.5), (G5, 1.0),
+            (C5, 0.75), (D5, 0.25), (E5, 0.5), (G5, 0.5),
+            (E5, 1.0), (D5, 0.5), (None, 0.25),
+            (C5, 0.5), (A4, 0.5), (G4, 1.0),
             (None, 0.5),
-            (G4, 0.25), (A4, 0.25), (B4, 0.25), (C5, 0.25),
-            (D5, 0.5), (C5, 0.5), (B4, 0.5), (A4, 0.5),
-            (G4, 1.5),
-            (None, 0.5),
+            (E5, 0.75), (D5, 0.25), (C5, 0.5), (A4, 0.5),
+            (G4, 1.5), (None, 0.5),
         ]
-        self.music_tracks['menu'] = self._generate_music_note_sequence(menu_track, tempo=150)
+        self.music_tracks['menu'] = self._generate_music_note_sequence(menu_track, tempo=105)
     
     def play_music(self, level_index, is_menu=False):
         """
@@ -363,8 +369,10 @@ class SoundManager:
                     self.current_music = music
                 else:
                     self.current_music = music  # Armazena mas não toca
+            except pygame.error as e:
+                print(f"[WARNING] Erro ao tocar musica: {e}")
             except Exception as e:
-                print(f"⚠️ Erro ao tocar música: {e}")
+                print(f"[ERROR] Erro inesperado ao tocar musica: {e}")
     
     def stop_music(self):
         """Para a música de fundo"""
@@ -372,39 +380,40 @@ class SoundManager:
             try:
                 self.current_music.stop()
                 self.current_music = None
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"[WARNING] Erro ao parar musica: {e}")
+                self.current_music = None
     
     def set_music_volume(self, volume):
         """
         Define volume da música.
-        
+
         Args:
             volume: Volume de 0.0 a 1.0
         """
         if self.enabled and self.current_music:
             try:
                 self.current_music.set_volume(volume)
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"[WARNING] Erro ao definir volume: {e}")
     
     def play(self, sound_name):
         """
         Toca um som.
-        
+
         Args:
             sound_name: Nome do som a tocar
         """
         if not self.enabled or not self.sfx_enabled:
             return
-        
+
         sound = self.sounds.get(sound_name)
         if sound:
             try:
                 sound.set_volume(self.sfx_volume)
                 sound.play()
-            except Exception as e:
-                pass
+            except pygame.error as e:
+                print(f"[WARNING] Erro ao tocar som '{sound_name}': {e}")
     
     def toggle_music(self):
         """Liga/desliga música de fundo"""
@@ -419,15 +428,15 @@ class SoundManager:
                 try:
                     self.current_music.set_volume(self.current_music_volume)
                     self.current_music.play(loops=-1)
-                except:
-                    pass
+                except pygame.error as e:
+                    print(f"⚠️ Erro ao religar música: {e}")
         else:
             # Desliga música
             if self.current_music:
                 try:
                     self.current_music.stop()
-                except:
-                    pass
+                except pygame.error as e:
+                    print(f"⚠️ Erro ao desligar música: {e}")
         
         return self.music_enabled
     

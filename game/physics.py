@@ -30,37 +30,39 @@ FÍSICA DE MOVIMENTO:
 """
 
 import math
-from config import PLAYER_RADIUS
+from typing import Tuple, List
+from config import PLAYER_RADIUS, SLIDING_FRICTION_FACTOR
 
 
 class Physics:
     """Gerenciador de física e colisões do jogo"""
-    
+
     @staticmethod
-    def grid_round(value):
+    def grid_round(value: float) -> int:
         """
         Arredonda valor para o grid mais próximo.
-        
+
         Args:
             value (float): Valor a ser arredondado
-            
+
         Returns:
             int: Valor arredondado
         """
         return int(round(value))
     
     @staticmethod
-    def aabb_collides_point(px, pz, cx, cz, half=0.5, radius=PLAYER_RADIUS):
+    def aabb_collides_point(px: float, pz: float, cx: float, cz: float,
+                           half: float = 0.5, radius: float = PLAYER_RADIUS) -> bool:
         """
         Detecta colisão entre um ponto circular e uma AABB.
         Usa técnica de "closest point" para precisão.
-        
+
         Args:
             px, pz: Posição do jogador
             cx, cz: Centro da AABB
             half: Metade do tamanho da AABB
             radius: Raio de colisão do jogador
-            
+
         Returns:
             bool: True se houver colisão
         """
@@ -82,14 +84,15 @@ class Physics:
         return (dx*dx + dz*dz) < (radius*radius)
     
     @staticmethod
-    def check_collision_with_list(px, pz, object_list):
+    def check_collision_with_list(px: float, pz: float,
+                                  object_list: List[Tuple[float, float, float]]) -> bool:
         """
         Verifica colisão do jogador com uma lista de objetos.
-        
+
         Args:
             px, pz: Posição do jogador
             object_list: Lista de tuplas (x, y, z)
-            
+
         Returns:
             bool: True se houver colisão com algum objeto
         """
@@ -99,15 +102,17 @@ class Physics:
         return False
     
     @staticmethod
-    def can_move_to(px, pz, walls, boxes):
+    def can_move_to(px: float, pz: float,
+                   walls: List[Tuple[float, float, float]],
+                   boxes: List[Tuple[float, float, float]]) -> bool:
         """
         Verifica se jogador pode mover para determinada posição.
-        
+
         Args:
             px, pz: Posição desejada
             walls: Lista de paredes
             boxes: Lista de caixas
-            
+
         Returns:
             bool: True se pode mover
         """
@@ -122,13 +127,13 @@ class Physics:
         return True
     
     @staticmethod
-    def get_cardinal_direction(yaw_degrees):
+    def get_cardinal_direction(yaw_degrees: float) -> Tuple[int, int]:
         """
         Converte ângulo de visão em direção cardinal (N, S, L, O).
-        
+
         Args:
             yaw_degrees: Ângulo de rotação horizontal em graus
-            
+
         Returns:
             tuple: (dir_x, dir_z) em valores -1, 0 ou 1
         """
@@ -147,19 +152,22 @@ class Physics:
         return dir_x, dir_z
     
     @staticmethod
-    def smooth_move(current_x, current_z, target_x, target_z, 
-                    walls, boxes, dt, speed):
+    def smooth_move(current_x: float, current_z: float,
+                   target_x: float, target_z: float,
+                   walls: List[Tuple[float, float, float]],
+                   boxes: List[Tuple[float, float, float]],
+                   dt: float, speed: float) -> Tuple[float, float, bool]:
         """
         Move jogador suavemente com sliding em paredes.
         MELHORADO: Previne travamento em cantos.
-        
+
         Args:
             current_x, current_z: Posição atual
             target_x, target_z: Posição desejada
             walls, boxes: Listas de obstáculos
             dt: Delta time
             speed: Velocidade de movimento
-            
+
         Returns:
             tuple: (new_x, new_z, moved)
         """
@@ -187,17 +195,17 @@ class Physics:
             current_z = new_z
             moved = True
         else:
-            # SLIDING MELHORADO: tenta com redução de velocidade
-            # Isso previne travamento em cantos apertados
-            
+            # SLIDING MELHORADO: tenta com redução de velocidade (fator de fricção)
+            # Isso previne travamento em cantos apertados e permite deslizar em paredes
+
             # Tenta mover só em X com velocidade reduzida
-            test_x = current_x + (dx * dt * 0.7)  # 70% da velocidade
+            test_x = current_x + (dx * dt * SLIDING_FRICTION_FACTOR)
             if Physics.can_move_to(test_x, current_z, walls, boxes):
                 current_x = test_x
                 moved = True
-            
+
             # Tenta mover só em Z com velocidade reduzida
-            test_z = current_z + (dz * dt * 0.7)
+            test_z = current_z + (dz * dt * SLIDING_FRICTION_FACTOR)
             if Physics.can_move_to(current_x, test_z, walls, boxes):
                 current_z = test_z
                 moved = True

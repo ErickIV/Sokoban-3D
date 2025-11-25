@@ -33,6 +33,8 @@ from .levels_data import LEVELS, get_level, get_level_count
 from .physics import Physics
 from utils.sound import get_sound_manager
 from graphics.clouds import CloudSystem
+from config import WORLD_BOUNDARY_LIMIT, SPAWN_ADJUSTMENT_OFFSET
+from utils.logger import get_logger
 
 
 class Level:
@@ -48,24 +50,130 @@ class Level:
         self.move_count = 0
         self.particles = []  # Lista de (x, y, z, start_time)
         self.clouds = None  # Sistema de nuvens
-        
+
         # Dados do nível atual
         self.level_name = ""
         self.level_difficulty = ""
+
+        # Logger para reportar problemas
+        self.logger = get_logger()
+
+    def _validate_level_data(self, level_data):
+        """
+        Valida dados de um nível antes de carregar.
+
+        Args:
+            level_data (dict): Dados do nível a validar
+
+        Returns:
+            tuple: (valido: bool, mensagem_erro: str ou None)
+        """
+        # Verifica se dados existem
+        if level_data is None:
+            return False, "Dados do nível são None"
+
+        # Verifica se é um dicionário
+        if not isinstance(level_data, dict):
+            return False, f"Dados do nível devem ser dict, recebido {type(level_data)}"
+
+        # Verifica chaves obrigatórias
+        required_keys = ['paredes', 'caixas', 'objetivos', 'spawn']
+        for key in required_keys:
+            if key not in level_data:
+                return False, f"Chave obrigatória '{key}' não encontrada nos dados do nível"
+
+        # Valida paredes
+        if not isinstance(level_data['paredes'], list):
+            return False, f"'paredes' deve ser uma lista, recebido {type(level_data['paredes'])}"
+
+        for i, wall in enumerate(level_data['paredes']):
+            if not isinstance(wall, tuple) or len(wall) != 3:
+                return False, f"Parede {i} inválida: deve ser tupla (x, y, z), recebido {wall}"
+            if not all(isinstance(coord, (int, float)) for coord in wall):
+                return False, f"Parede {i} tem coordenadas não-numéricas: {wall}"
+            # Verifica se está dentro dos limites do mundo
+            if abs(wall[0]) >= WORLD_BOUNDARY_LIMIT or abs(wall[2]) >= WORLD_BOUNDARY_LIMIT:
+                return False, f"Parede {i} fora dos limites do mundo: {wall}"
+
+        # Valida caixas
+        if not isinstance(level_data['caixas'], list):
+            return False, f"'caixas' deve ser uma lista, recebido {type(level_data['caixas'])}"
+
+        if len(level_data['caixas']) == 0:
+            return False, "Nível deve ter pelo menos uma caixa"
+
+        for i, box in enumerate(level_data['caixas']):
+            if not isinstance(box, tuple) or len(box) != 3:
+                return False, f"Caixa {i} inválida: deve ser tupla (x, y, z), recebido {box}"
+            if not all(isinstance(coord, (int, float)) for coord in box):
+                return False, f"Caixa {i} tem coordenadas não-numéricas: {box}"
+            if abs(box[0]) >= WORLD_BOUNDARY_LIMIT or abs(box[2]) >= WORLD_BOUNDARY_LIMIT:
+                return False, f"Caixa {i} fora dos limites do mundo: {box}"
+            # Verifica se caixa não está dentro de parede
+            if box in level_data['paredes']:
+                return False, f"Caixa {i} está dentro de uma parede: {box}"
+
+        # Valida objetivos
+        if not isinstance(level_data['objetivos'], list):
+            return False, f"'objetivos' deve ser uma lista, recebido {type(level_data['objetivos'])}"
+
+        if len(level_data['objetivos']) == 0:
+            return False, "Nível deve ter pelo menos um objetivo"
+
+        # Verifica correspondência entre número de caixas e objetivos
+        if len(level_data['caixas']) != len(level_data['objetivos']):
+            self.logger.warning(
+                f"Número de caixas ({len(level_data['caixas'])}) "
+                f"difere do número de objetivos ({len(level_data['objetivos'])})"
+            )
+
+        for i, obj in enumerate(level_data['objetivos']):
+            if not isinstance(obj, tuple) or len(obj) != 3:
+                return False, f"Objetivo {i} inválido: deve ser tupla (x, y, z), recebido {obj}"
+            if not all(isinstance(coord, (int, float)) for coord in obj):
+                return False, f"Objetivo {i} tem coordenadas não-numéricas: {obj}"
+            if abs(obj[0]) >= WORLD_BOUNDARY_LIMIT or abs(obj[2]) >= WORLD_BOUNDARY_LIMIT:
+                return False, f"Objetivo {i} fora dos limites do mundo: {obj}"
+            if obj in level_data['paredes']:
+                return False, f"Objetivo {i} está dentro de uma parede: {obj}"
+
+        # Valida spawn
+        spawn = level_data['spawn']
+        if not isinstance(spawn, tuple) or len(spawn) != 3:
+            return False, f"'spawn' deve ser tupla (x, y, z), recebido {spawn}"
+        if not all(isinstance(coord, (int, float)) for coord in spawn):
+            return False, f"'spawn' tem coordenadas não-numéricas: {spawn}"
+        if abs(spawn[0]) >= WORLD_BOUNDARY_LIMIT or abs(spawn[2]) >= WORLD_BOUNDARY_LIMIT:
+            return False, f"'spawn' fora dos limites do mundo: {spawn}"
+
+        # Todas as validações passaram
+        return True, None
     
     def load_level(self, level_index):
         """
         Carrega um nível específico.
-        
+
         Args:
             level_index (int): Índice do nível (0-based)
-            
+
         Returns:
             bool: True se carregou com sucesso
         """
+        # Valida índice do nível
+        if not isinstance(level_index, int):
+            self.logger.error(f"Índice de nível inválido: {level_index} (tipo: {type(level_index)})")
+            return False
+
+        if level_index < 0 or level_index >= get_level_count():
+            self.logger.error(f"Índice de nível fora do intervalo: {level_index} (máx: {get_level_count() - 1})")
+            return False
+
         level_data = get_level(level_index)
-        
-        if level_data is None:
+
+        # Valida dados do nível
+        valid, error_msg = self._validate_level_data(level_data)
+        if not valid:
+            self.logger.error(f"Dados de nível {level_index} inválidos: {error_msg}")
             return False
         
         self.current_level_index = level_index
@@ -83,11 +191,11 @@ class Level:
             int(round(self.spawn_position[2]))
         )
         if spawn_grid in self.walls:
-            # Ajusta spawn automaticamente movendo 2 unidades para frente
+            # Ajusta spawn automaticamente movendo unidades para frente
             self.spawn_position = (
                 self.spawn_position[0],
                 self.spawn_position[1],
-                self.spawn_position[2] + 2.0
+                self.spawn_position[2] + SPAWN_ADJUSTMENT_OFFSET
             )
         
         # Metadados
@@ -98,10 +206,11 @@ class Level:
         self.move_count = 0
         self.particles = []
         
-        # Inicializa sistema de nuvens (distribuídas em 360°)
+        # Inicializa sistema de nuvens melhorado
+        from config import CLOUD_COUNT, CLOUD_WIND_SPEED
         if self.clouds:
             self.clouds.cleanup()  # Limpa nuvens antigas
-        self.clouds = CloudSystem(num_clouds=15, wind_speed=0.8)
+        self.clouds = CloudSystem(num_clouds=CLOUD_COUNT, wind_speed=CLOUD_WIND_SPEED)
         
         return True
     
@@ -163,8 +272,8 @@ class Level:
         if dest_pos in self.boxes or dest_pos in self.walls:
             return False, box_pos, dest_pos
         
-        # Verifica limites do mundo
-        if abs(dest_pos[0]) >= 100 or abs(dest_pos[2]) >= 100:
+        # Verifica limites do mundo para evitar caixas fora do mapa
+        if abs(dest_pos[0]) >= WORLD_BOUNDARY_LIMIT or abs(dest_pos[2]) >= WORLD_BOUNDARY_LIMIT:
             return False, box_pos, dest_pos
         
         return True, box_pos, dest_pos
@@ -198,9 +307,27 @@ class Level:
         # Som de empurrar
         get_sound_manager().play('push')
         
-        # Cria partículas e som se atingiu objetivo
+        # Cria partículas espetaculares e som se atingiu objetivo
         if dest_pos in self.objectives:
-            self.particles.append((dest_pos[0], dest_pos[1], dest_pos[2], current_time))
+            # Explosão de partículas coloridas e variadas!
+            import random
+            num_particles = 8  # Partículas balanceadas para efeito bonito
+
+            for i in range(num_particles):
+                # Posições variadas ao redor da caixa
+                offset_x = random.uniform(-0.5, 0.5)
+                offset_y = random.uniform(0.0, 0.8)
+                offset_z = random.uniform(-0.5, 0.5)
+
+                particle_x = dest_pos[0] + offset_x
+                particle_y = dest_pos[1] + offset_y
+                particle_z = dest_pos[2] + offset_z
+
+                # Tempo ligeiramente diferente para cada partícula (efeito cascata)
+                particle_time = current_time + (i * 0.02)
+
+                self.particles.append((particle_x, particle_y, particle_z, particle_time))
+
             get_sound_manager().play('box_on_target')
         
         return True
