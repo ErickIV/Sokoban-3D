@@ -42,7 +42,6 @@ from config import *
 from .materials import Materials, Lighting
 from .primitives import Primitives
 from .ui import UI
-from .ui import UI
 from .clouds import CloudSystem
 from .textures import TextureManager
 
@@ -219,42 +218,50 @@ class Renderer:
         return 'normal'
     
     @staticmethod
-    def draw_particles(particles, current_time):
+    def draw_particles(particles, current_time, camera_pos):
         """
         Desenha partículas de efeito.
         
         Args:
-            particles: Lista de (x, y, z, start_time)
+            particles: Lista de [x, y, z, vx, vy, vz, r, g, b, start_time, size]
             current_time: Tempo atual
+            camera_pos: Posição da câmera (x, y, z)
         """
+        if not particles:
+            return
+
         glDisable(GL_LIGHTING)
+        glDepthMask(GL_FALSE) # Não escreve no Z-buffer (transparência)
         
-        for (x, y, z, start_t) in particles:
-            elapsed = current_time - start_t
+        # Additive Blending para efeito de luz/fogo
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+        
+        for p in particles:
+            # p = [x, y, z, vx, vy, vz, r, g, b, start_time, size]
+            x, y, z = p[0], p[1], p[2]
+            r, g, b = p[6], p[7], p[8]
+            start_time = p[9]
+            base_size = p[10] if len(p) > 10 else 0.5  # Tamanho individual
             
-            if elapsed < PARTICLE_LIFETIME:
-                # Animação melhorada: Partículas flutuantes e cintilantes
-                for i in range(PARTICLE_COUNT):
-                    angle = (i / PARTICLE_COUNT) * 2 * math.pi + (elapsed * 2)
-                    radius = 0.5 + math.sin(elapsed * 3 + i) * 0.2
-                    
-                    px = x + math.cos(angle) * radius
-                    pz = z + math.sin(angle) * radius
-                    py = y + elapsed * 1.5 + math.sin(elapsed * 10 + i) * 0.1
-                    
-                    # Cores variadas (Dourado, Cyan, Magenta)
-                    colors = [
-                        (1.0, 0.8, 0.0), # Dourado
-                        (0.0, 1.0, 1.0), # Cyan
-                        (1.0, 0.0, 1.0)  # Magenta
-                    ]
-                    color = colors[i % 3]
-                    
-                    # Tamanho pulsante
-                    size = 0.08 + math.sin(elapsed * 10) * 0.03
-                    
-                    Primitives.draw_particle(px, py, pz, size, color)
+            age = current_time - start_time
+            if age < 4.0:
+                # Fade out mais suave
+                alpha = 1.0 - (age / 4.0)
+                
+                # Usa tamanho individual da partícula, aumentado para melhor visibilidade
+                size = base_size * alpha * 1.2  # Multiplicador extra para visibilidade
+                
+                Primitives.draw_textured_particle(
+                    x, y, z, 
+                    size, 
+                    (r, g, b, alpha), 
+                    camera_pos
+                )
         
+        # Restaura estados
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glDepthMask(GL_TRUE)
         glEnable(GL_LIGHTING)
     
     @staticmethod
@@ -297,7 +304,8 @@ class Renderer:
             Primitives.draw_shadow(x, y, z)
         
         # Desenha partículas
-        Renderer.draw_particles(level.particles, current_time)
+        camera_pos = (player.x, player.y, player.z)
+        Renderer.draw_particles(level.particles, current_time, camera_pos)
         
         # Desenha HUD
         stats = level.get_progress_stats()
@@ -399,7 +407,8 @@ class Renderer:
             Renderer.draw_box(x, y, z, 'on_target')
             Primitives.draw_shadow(x, y, z)
         
-        Renderer.draw_particles(level.particles, current_time)
+        camera_pos = (player.x, player.y, player.z)
+        Renderer.draw_particles(level.particles, current_time, camera_pos)
         
         # Overlay de vitória
         UI.draw_victory_screen(level.move_count)

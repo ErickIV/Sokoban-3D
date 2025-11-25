@@ -29,6 +29,7 @@ SISTEMA DE GRID:
 - Conversão através de Physics.grid_round()
 """
 
+import math
 from .levels_data import LEVELS, get_level, get_level_count
 from .physics import Physics
 from utils.sound import get_sound_manager
@@ -306,68 +307,89 @@ class Level:
         
         # Som de empurrar
         get_sound_manager().play('push')
-        
         # Cria partículas espetaculares e som se atingiu objetivo
         if dest_pos in self.objectives:
             # Explosão de partículas coloridas e variadas!
             import random
-            num_particles = 8  # Partículas balanceadas para efeito bonito
-
+            num_particles = 50  # Aumentado para efeito mais denso
+            
             for i in range(num_particles):
-                # Posições variadas ao redor da caixa
-                offset_x = random.uniform(-0.5, 0.5)
-                offset_y = random.uniform(0.0, 0.8)
-                offset_z = random.uniform(-0.5, 0.5)
-
-                particle_x = dest_pos[0] + offset_x
-                particle_y = dest_pos[1] + offset_y
-                particle_z = dest_pos[2] + offset_z
-
-                # Tempo ligeiramente diferente para cada partícula (efeito cascata)
-                particle_time = current_time + (i * 0.02)
-
-                self.particles.append((particle_x, particle_y, particle_z, particle_time))
+                # Posição inicial (centro da caixa)
+                px = dest_pos[0]
+                py = 0.5
+                pz = dest_pos[2]
+                
+                # Velocidade aleatória (explosão esférica) - reduzida para animação mais lenta
+                speed = random.uniform(0.5, 3.0)
+                angle_y = random.uniform(0, math.pi * 2)
+                angle_v = random.uniform(0, math.pi / 2) # Apenas para cima
+                
+                vx = math.cos(angle_y) * math.cos(angle_v) * speed
+                vy = math.sin(angle_v) * speed
+                vz = math.sin(angle_y) * math.cos(angle_v) * speed
+                
+                # Cores mais brilhantes e saturadas
+                colors = [
+                    (1.0, 0.9, 0.2),  # Dourado brilhante
+                    (0.2, 1.0, 1.0),  # Cyan elétrico
+                    (1.0, 0.2, 1.0),  # Magenta neon
+                    (1.0, 1.0, 0.5),  # Amarelo
+                    (1.0, 0.6, 0.2),  # Laranja
+                ]
+                color = random.choice(colors)
+                
+                # Tamanho aleatório para variedade (0.3 a 0.8)
+                particle_size = random.uniform(0.3, 0.8)
+                
+                # [x, y, z, vx, vy, vz, r, g, b, start_time, size]
+                self.particles.append([
+                    px, py, pz, 
+                    vx, vy, vz,
+                    color[0], color[1], color[2],
+                    current_time,
+                    particle_size
+                ])
 
             get_sound_manager().play('box_on_target')
         
         return True
-    
-    def get_box_status(self, box_position, player_x, player_z):
+
+    def update_particles(self, current_time, dt):
         """
-        Retorna status de uma caixa para renderização.
-        
-        Args:
-            box_position: Posição da caixa
-            player_x, player_z: Posição do jogador
-            
-        Returns:
-            str: 'on_target', 'pushable', 'blocked', ou 'normal'
-        """
-        # Caixa no objetivo
-        if box_position in self.objectives:
-            return 'on_target'
-        
-        # Verifica se está na frente do jogador
-        dir_x, dir_z = 0, 0  # Precisaria da direção da câmera
-        px = Physics.grid_round(player_x)
-        pz = Physics.grid_round(player_z)
-        
-        # Esta função seria chamada do renderer com a direção
-        return 'normal'
-    
-    def update_particles(self, current_time, max_lifetime=2.0):
-        """
-        Atualiza lista de partículas, removendo as antigas.
+        Atualiza física das partículas.
         
         Args:
             current_time: Tempo atual
-            max_lifetime: Tempo máximo de vida das partículas
+            dt: Delta time
         """
-        self.particles = [
-            p for p in self.particles 
-            if (current_time - p[3]) < max_lifetime
-        ]
-    
+        gravity = -5.0  # Reduzido para efeito mais "mágico"
+        
+        # Atualiza e filtra partículas vivas
+        alive_particles = []
+        for p in self.particles:
+            # p = [x, y, z, vx, vy, vz, r, g, b, start_time, size]
+            start_time = p[9]
+            age = current_time - start_time
+            
+            if age < 4.0: # Tempo de vida (aumentado para melhor visibilidade)
+                # Física
+                p[0] += p[3] * dt # x += vx * dt
+                p[1] += p[4] * dt # y += vy * dt
+                p[2] += p[5] * dt # z += vz * dt
+                
+                p[4] += gravity * dt # vy += g * dt
+                
+                # Colisão com chão - mais bounce
+                if p[1] < 0.1:
+                    p[1] = 0.1
+                    p[4] *= -0.7 # Mais bounce (antes 0.5)
+                    p[3] *= 0.8 # Atrito
+                    p[5] *= 0.8
+                
+                alive_particles.append(p)
+                
+        self.particles = alive_particles
+
     def get_progress_stats(self):
         """
         Retorna estatísticas de progresso do nível.
