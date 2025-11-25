@@ -74,10 +74,17 @@ Ambiente3D---BoxPush/
 - **Texturas Realistas**: Ruído procedural para paredes, chão e caixas (sem assets externos)
 - **Grama 3D**: Partículas de grama no chão para maior imersão
 - **Nuvens Volumétricas**: Sistema "multi-puff" com maior variedade e realismo
-- **Partículas de Sucesso**: Efeitos visuais (ouro, ciano, magenta) com animação flutuante
+- **Sistema de Partículas Avançado**: 
+  - 50 partículas por efeito com tamanhos variados (0.3-0.8)
+  - Glow procedural intenso com transição suave
+  - Física realista com gravidade e bounce
+  - 5 cores vibrantes e saturadas
+  - Billboarding (sempre de frente para câmera)
+  - Additive blending para efeito luminoso
 - **Display Lists**: Otimização de ~90% na renderização
 - **Iluminação 3-Pontos**: Key Light + Fill Light + Rim Light
 - **Materiais PBR-like**: Propriedades de reflexão e brilho ajustadas
+- **Sombras projetadas**: Profundidade e realismo
 - **Sombras projetadas**: Profundidade e realismo
 - **Modo Fullscreen**: Suporte completo (F11)
 

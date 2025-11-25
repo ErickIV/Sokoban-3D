@@ -10,7 +10,13 @@ Todas as mudanças notáveis do projeto serão documentadas aqui.
 - **Texturas Realistas**: Implementado ruído procedural para paredes, chão e caixas (substituindo cores sólidas).
 - **Grama 3D**: Adicionadas partículas de grama no chão para maior imersão.
 - **Nuvens Melhoradas**: Sistema de nuvens "multi-puff" com maior variedade e realismo.
-- **Partículas de Sucesso**: Efeitos visuais (ouro, ciano, magenta) com animação flutuante ao completar objetivos.
+- **Sistema de Partículas Avançado**: 
+  - 50 partículas com tamanhos variados (0.3-0.8) para maior dinamismo
+  - Textura procedural com glow intenso e suave para efeito "mágico"
+  - 5 cores vibrantes (dourado, cyan, magenta, amarelo, laranja)
+  - Física otimizada com gravidade reduzida e bounce aumentado
+  - Velocidade controlada (0.5-3.0) para animação suave
+  - Tempo de vida de 4 segundos com fade out gradual
 - **Menu Estilizado**: Novo design com gradientes, sombras e tipografia melhorada.
 
 ### 🖥️ Interface de Usuário (UI)
@@ -26,10 +32,12 @@ Todas as mudanças notáveis do projeto serão documentadas aqui.
 - **Fix Eventos**: Corrigida lógica de eventos duplicada que impedia o funcionamento do botão "VOLTAR".
 - **Fix Texto**: Corrigido `TypeError` no cálculo de largura de texto substituindo `glutBitmapLength` por loop manual.
 - **Fix Renderização**: Restauradas definições de métodos corrompidos em `renderer.py`.
+- **Fix Partículas**: Corrigido `AttributeError` e `NameError` no sistema de partículas.
 
 ### 🔧 Melhorias Técnicas
 - **Refatoração de Eventos**: Lógica de `handle_events` em `main.py` reescrita para maior clareza e robustez.
 - **Abstração de UI**: Novos métodos em `ui.py` (`draw_slider`, `get_text_width`) para componentes reutilizáveis.
+- **Sistema de Partículas Modular**: Textura procedural, física com gravidade/bounce, billboarding para sempre encarar câmera.
 
 ---
 
