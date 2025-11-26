@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoxPush 3D - Apresentação Técnica</title>
+    <meta name="description"
+        content="Apresentação completa do projeto BoxPush 3D - Sokoban 3D desenvolvido com Python, Pygame e PyOpenGL">
+    <meta name="author" content="Erick Vieira, Patrick Lohn, Rafael Sonoki">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <main id="slide-container">
+
+        <!-- ===================== SLIDE 1: TÍTULO ===================== -->
+        <section class="slide active" id="slide-1">
+            <div class="content-center">
+                <div class="hero-badge">🎮 PROJETO ACADÊMICO - COMPUTAÇÃO GRÁFICA</div>
+                <h1 class="hero-title">BoxPush 3D</h1>
+                <h2 class="hero-subtitle">Sokoban 3D com Engine Gráfico Próprio</h2>
+                <p class="hero-tech">Python • PyOpenGL • NumPy • Pygame</p>
+
+                <div class="hero-stats">
+                    <div class="stat-hero">
+                        <span class="stat-hero-number">3743</span>
+                        <span class="stat-hero-label">Linhas de Código</span>
+                    </div>
+                    <div class="stat-hero">
+                        <span class="stat-hero-number">120</span>
+                        <span class="stat-hero-label">FPS Estáveis</span>
+                    </div>
+                    <div class="stat-hero">
+                        <span class="stat-hero-number">92%</span>
+                        <span class="stat-hero-label">Qualidade</span>
+                    </div>
+                    <div class="stat-hero">
+                        <span class="stat-hero-number">0</span>
+                        <span class="stat-hero-label">Assets Externos</span>
+                    </div>
+                </div>
+
+                <div class="hero-authors">
+                    <p>Erick Vieira • Patrick Lohn • Rafael Sonoki</p>
+                    <p style="opacity: 0.7; font-size: 0.9em; margin-top: 0.5rem;">Ciência da Computação - Unisul</p>
+                </div>
+            </div>
+            <div class="background-gradient"></div>
+        </section>
+
+        <!-- ===================== SLIDE 2: VISÃO GERAL ===================== -->
+        <section class="slide" id="slide-2">
+            <div class="content-center">
+                <h2 class="slide-title">Visão Geral do Projeto</h2>
+
+                <div class="overview-grid">
+                    <div class="overview-card">
+                        <div class="overview-icon">🎯</div>
+                        <h3>Objetivo</h3>
+                        <p>Criar um jogo Sokoban completo em 3D usando apenas Python e OpenGL, sem assets externos,
+                            demonstrando domínio de computação gráfica e arquitetura de software</p>
+                    </div>
+
+                    <div class="overview-card">
+                        <div class="overview-icon">🎮</div>
+                        <h3>Proposta</h3>
+                        <p>Puzzle de empurrar caixas para objetivos em primeira pessoa, com física realista, gráficos
+                            procedurais e áudio sintético</p>
+                    </div>
+
+                    <div class="overview-card">
+                        <div class="overview-icon">⚙️</div>
+                        <h3>Tecnologias</h3>
+                        <ul class="tech-list">
+                            <li><strong>Python 3.8+:</strong> Linguagem principal</li>
+                            <li><strong>PyOpenGL:</strong> Renderização 3D</li>
+                            <li><strong>Pygame:</strong> Janela, eventos, áudio</li>
+                            <li><strong>NumPy:</strong> Síntese de áudio procedural</li>
+                        </ul>
+                    </div>
+
+                    <div class="overview-card highlight">
+                        <div class="overview-icon">🏆</div>
+                        <h3>Diferenciais</h3>
+                        <ul class="tech-list">
+                            <li>✅ 100% código próprio (sem assets)</li>
+                            <li>✅ Arquitetura profissional (MVC-like)</li>
+                            <li>✅ 28 testes automatizados</li>
+                            <li>✅ Sistema de áudio procedural</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 3: ARQUITETURA GERAL ===================== -->
+        <section class="slide" id="slide-3">
+            <div class="content-center">
+                <h2 class="slide-title">Arquitetura do Projeto</h2>
+
+                <div class="project-tree">
+                    <pre><code>Ambiente3D---BoxPush/
+│
+├── <span class="file-main">main.py</span>                    <span class="comment"># 🎮 Ponto de entrada do jogo (refatorado)</span>
+├── <span class="file-config">config.py</span>                  <span class="comment"># ⚙️ Configurações centralizadas</span>
+├── requirements.txt           <span class="comment"># 📦 Gerenciamento de dependências</span>
+│
+├── <span class="folder">graphics/</span>                  <span class="comment"># 🎨 Módulo de Renderização</span>
+│   ├── __init__.py
+│   ├── <span class="file">materials.py</span>           <span class="comment"># Materiais PBR e iluminação 3-pontos</span>
+│   ├── <span class="file">primitives.py</span>          <span class="comment"># Formas 3D + Display Lists otimizadas</span>
+│   ├── <span class="file">renderer.py</span>            <span class="comment"># Pipeline de renderização completa</span>
+│   ├── <span class="file">clouds.py</span>              <span class="comment"># Sistema de nuvens procedurais animadas</span>
+│   └── <span class="file">ui.py</span>                  <span class="comment"># HUD, menus e interface</span>
+│
+├── <span class="folder">game/</span>                      <span class="comment"># 🎯 Lógica do Jogo</span>
+│   ├── __init__.py
+│   ├── <span class="file">levels_data.py</span>         <span class="comment"># Definição dos 5 níveis</span>
+│   ├── <span class="file">level.py</span>               <span class="comment"># Gerenciamento de níveis</span>
+│   ├── <span class="file">player.py</span>              <span class="comment"># Jogador e câmera (+ type hints)</span>
+│   └── <span class="file">physics.py</span>             <span class="comment"># Sistema de física (+ type hints)</span>
+│
+├── <span class="folder">utils/</span>                     <span class="comment"># 🔧 Utilitários</span>
+│   ├── __init__.py
+│   ├── <span class="file">sound.py</span>               <span class="comment"># Sistema de áudio procedimental (Singleton)</span>
+│   └── <span class="file">logger.py</span>              <span class="comment"># Sistema de logging profissional ✨ NOVO</span>
+│
+└── <span class="folder">tests/</span>                     <span class="comment"># 🧪 Testes Unitários ✨ NOVO</span>
+    ├── __init__.py
+    ├── <span class="file">test_physics.py</span>        <span class="comment"># 15 testes de física</span>
+    └── <span class="file">test_player.py</span>         <span class="comment"># 13 testes do jogador</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 4: ARQUITETURA - STATE PATTERN (NEW) ===================== -->
+        <section class="slide" id="slide-4">
+            <div class="content-split code-slide">
+                <div class="text-content">
+                    <h2>Arquitetura - State Pattern</h2>
+                    <p class="code-intro">Gerenciamento robusto de estados do jogo</p>
+                    <div class="code-highlights">
+                        <div class="highlight-point">
+                            <span class="highlight-icon">�</span>
+                            <strong>Transições Seguras</strong>
+                            <p>Método <code>transition_to</code> garante limpeza e setup entre estados</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">📑</span>
+                            <strong>Estados Definidos</strong>
+                            <p>MENU, PLAYING, PAUSED, WIN, FINAL_VICTORY</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🛡️</span>
+                            <strong>Prevenção de Bugs</strong>
+                            <p>Evita estados inconsistentes (ex: mover player enquanto pausado)</p>
+                        </div>
+                    </div>
+                    <div class="file-reference">📄 main.py</div>
+                </div>
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 main.py</span>
+                        <span class="code-lines">Class GameState</span>
+                    </div>
+                    <pre><code><span class="code-keyword">class</span> <span class="code-class">GameState</span>:
+    <span class="code-string">"""Máquina de estados do jogo"""</span>
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(<span class="code-param">self</span>):
+        <span class="code-param">self</span>.state = GAME_STATE_MENU
+        <span class="code-param">self</span>.previous_state = GAME_STATE_MENU
+
+    <span class="code-keyword">def</span> <span class="code-function">is_playing</span>(<span class="code-param">self</span>):
+        <span class="code-keyword">return</span> <span class="code-param">self</span>.state == GAME_STATE_PLAYING
+
+    <span class="code-keyword">def</span> <span class="code-function">is_paused</span>(<span class="code-param">self</span>):
+        <span class="code-keyword">return</span> <span class="code-param">self</span>.state == GAME_STATE_PAUSED
+
+    <span class="code-keyword">def</span> <span class="code-function">transition_to</span>(<span class="code-param">self</span>, new_state):
+        <span class="code-string">"""Transição segura entre estados"""</span>
+        <span class="code-param">self</span>.previous_state = <span class="code-param">self</span>.state
+        <span class="code-param">self</span>.state = new_state</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 5: CÓDIGO - GAME LOOP ===================== -->
+        <section class="slide" id="slide-5">
+            <div class="content-split code-slide">
+                <div class="text-content">
+                    <h2>Código: Game Loop Principal</h2>
+                    <p class="code-intro">O coração do engine - orquestra tempo, eventos e renderização</p>
+                    <div class="code-highlights">
+                        <div class="highlight-point">
+                            <span class="highlight-icon">⏱️</span>
+                            <strong>Delta Time</strong>
+                            <p>Movimento independente de framerate usando clock.tick(120)</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🔄</span>
+                            <strong>State Pattern</strong>
+                            <p>Estados bem definidos: Menu → Playing → Paused → Victory</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🎨</span>
+                            <strong>Separação Update/Render</strong>
+                            <p>Lógica e renderização totalmente separadas (boas práticas)</p>
+                        </div>
+                    </div>
+                    <div class="file-reference">📄 main.py:523-542</div>
+                </div>
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 main.py</span>
+                        <span class="code-lines">Game Loop (120 FPS)</span>
+                    </div>
+                    <pre><code><span class="code-keyword">def</span> <span class="code-function">run</span>(<span class="code-param">self</span>):
+    <span class="code-string">"""Loop principal do jogo"""</span>
+    running = <span class="code-boolean">True</span>
+
+    <span class="code-keyword">while</span> running:
+        <span class="code-comment"># 1. Delta Time (independente de FPS)</span>
+        <span class="code-highlight">dt_ms = <span class="code-param">self</span>.clock.tick(TARGET_FPS)  <span class="code-comment"># 120 FPS</span></span>
+        <span class="code-highlight">dt = min(dt_ms / <span class="code-number">1000.0</span>, MAX_FRAME_TIME)</span>
+        current_time = pygame.time.get_ticks() / <span class="code-number">1000.0</span>
+
+        <span class="code-comment"># 2. Processamento de Eventos</span>
+        running = <span class="code-param">self</span>.handle_events()
+
+        <span class="code-comment"># 3. Atualização de Lógica (State-dependent)</span>
+        <span class="code-keyword">if</span> <span class="code-param">self</span>.game_state.is_playing():
+            <span class="code-param">self</span>.update_playing(dt, current_time)
+
+        <span class="code-comment"># 4. Renderização</span>
+        <span class="code-param">self</span>.render(current_time)
+        pygame.display.flip()</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 6: CÓDIGO - FÍSICA ===================== -->
+        <section class="slide" id="slide-6">
+            <div class="content-split code-slide">
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 game/physics.py</span>
+                        <span class="code-lines">Sliding Collision System</span>
+                    </div>
+                    <pre><code><span class="code-keyword">def</span> <span class="code-function">smooth_move</span>(current_x, current_z, target_x, target_z,
+                  walls, boxes, dt, speed):
+    <span class="code-string">"""Move com sliding em paredes (70% velocidade)"""</span>
+
+    <span class="code-comment"># Calcula vetor de movimento desejado</span>
+    dx = target_x - current_x
+    dz = target_z - current_z
+
+    <span class="code-comment"># Normaliza e aplica speed</span>
+    distance = math.hypot(dx, dz)
+    <span class="code-keyword">if</span> distance > <span class="code-number">0</span>:
+        dx = (dx / distance) * speed * dt
+        dz = (dz / distance) * speed * dt
+
+    <span class="code-comment"># Tenta mover diretamente</span>
+    <span class="code-keyword">if</span> can_move_to(current_x + dx, current_z + dz, ...):
+        <span class="code-keyword">return</span> current_x + dx, current_z + dz, <span class="code-boolean">True</span>
+
+    <span class="code-comment"># SLIDING: Decompõe movimento em eixos</span>
+    <span class="code-highlight"># Se bloqueado, tenta mover só em X com fricção</span>
+    <span class="code-highlight">test_x = current_x + (dx * SLIDING_FRICTION)  <span class="code-comment"># 0.7</span></span>
+    <span class="code-keyword">if</span> can_move_to(test_x, current_z, ...):
+        <span class="code-keyword">return</span> test_x, current_z, <span class="code-boolean">True</span>
+
+    <span class="code-highlight"># Se X bloqueado, tenta só em Z</span>
+    <span class="code-highlight">test_z = current_z + (dz * SLIDING_FRICTION)</span>
+    <span class="code-keyword">if</span> can_move_to(current_x, test_z, ...):
+        <span class="code-keyword">return</span> current_x, test_z, <span class="code-boolean">True</span>
+
+    <span class="code-keyword">return</span> current_x, current_z, <span class="code-boolean">False</span></code></pre>
+                </div>
+                <div class="text-content">
+                    <h2>Sistema de Física</h2>
+                    <p class="code-intro">Sliding collision para movimento suave e natural</p>
+                    <div class="physics-diagram">
+                        <div class="diagram-title">Como funciona:</div>
+                        <div class="diagram-step">
+                            <span class="step-number">1</span>
+                            <p>Tenta mover para posição desejada</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">2</span>
+                            <p>Se bloqueado, <strong>decompõe</strong> o vetor em X e Z</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">3</span>
+                            <p>Tenta mover apenas em X (com fricção 70%)</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">4</span>
+                            <p>Se ainda bloqueado, tenta apenas em Z</p>
+                        </div>
+                    </div>
+                    <div class="code-note">
+                        💡 <strong>Resultado:</strong> Jogador desliza suavemente ao longo de paredes ao invés de travar
+                    </div>
+                    <div class="file-reference">📄 game/physics.py:154-213</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 7: CÓDIGO - ILUMINAÇÃO ===================== -->
+        <section class="slide" id="slide-7">
+            <div class="content-split code-slide">
+                <div class="text-content">
+                    <h2>Sistema de Iluminação</h2>
+                    <p class="code-intro">Three-Point Lighting profissional usado em cinema</p>
+                    <div class="lighting-diagram">
+                        <div class="light-source">
+                            <span class="light-icon sun">☀️</span>
+                            <strong>Key Light (GL_LIGHT0)</strong>
+                            <p>Luz solar quente e intensa - amarelo (1.2, 1.15, 0.95)</p>
+                        </div>
+                        <div class="light-source">
+                            <span class="light-icon sky">🌤️</span>
+                            <strong>Fill Light (GL_LIGHT1)</strong>
+                            <p>Luz difusa do céu - azul suave (0.65, 0.75, 0.95)</p>
+                        </div>
+                        <div class="light-source">
+                            <span class="light-icon rim">✨</span>
+                            <strong>Rim Light (GL_LIGHT2)</strong>
+                            <p>Luz de contorno - cinza-azul (0.55, 0.60, 0.70)</p>
+                        </div>
+                    </div>
+                    <div class="render-features">
+                        <div class="feature-badge">⚡ Display Lists (+90% performance)</div>
+                        <div class="feature-badge">🎨 Materiais PBR-like</div>
+                        <div class="feature-badge">💎 Specular highlights</div>
+                    </div>
+                    <div class="file-reference">📄 graphics/materials.py</div>
+                </div>
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 graphics/materials.py</span>
+                        <span class="code-lines">Lighting.setup()</span>
+                    </div>
+                    <pre><code><span class="code-keyword">class</span> <span class="code-class">Lighting</span>:
+    <span class="code-decorator">@staticmethod</span>
+    <span class="code-keyword">def</span> <span class="code-function">setup</span>():
+        <span class="code-string">"""Sistema de iluminação de 3 pontos"""</span>
+
+        <span class="code-comment"># Iluminação ambiente global (azulado)</span>
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+                      (<span class="code-number">0.35</span>, <span class="code-number">0.38</span>, <span class="code-number">0.45</span>, <span class="code-number">1.0</span>))
+
+        <span class="code-comment"># KEY LIGHT (Sol) - Quente e dramático</span>
+        glEnable(GL_LIGHT0)
+        glLightfv(GL_LIGHT0, GL_POSITION,
+                 (<span class="code-number">20.0</span>, <span class="code-number">30.0</span>, <span class="code-number">15.0</span>, <span class="code-number">1.0</span>))
+        <span class="code-highlight">glLightfv(GL_LIGHT0, GL_DIFFUSE,</span>
+        <span class="code-highlight">         (<span class="code-number">1.2</span>, <span class="code-number">1.15</span>, <span class="code-number">0.95</span>, <span class="code-number">1.0</span>))  <span class="code-comment"># Amarelo</span></span>
+        glLightfv(GL_LIGHT0, GL_SPECULAR,
+                 (<span class="code-number">1.5</span>, <span class="code-number">1.5</span>, <span class="code-number">1.4</span>, <span class="code-number">1.0</span>))
+
+        <span class="code-comment"># FILL LIGHT (Céu) - Frio e suave</span>
+        glEnable(GL_LIGHT1)
+        <span class="code-highlight">glLightfv(GL_LIGHT1, GL_DIFFUSE,</span>
+        <span class="code-highlight">         (<span class="code-number">0.65</span>, <span class="code-number">0.75</span>, <span class="code-number">0.95</span>, <span class="code-number">1.0</span>))  <span class="code-comment"># Azul céu</span></span>
+
+        <span class="code-comment"># RIM LIGHT (Bounce) - Profundidade</span>
+        glEnable(GL_LIGHT2)
+        <span class="code-highlight">glLightfv(GL_LIGHT2, GL_DIFFUSE,</span>
+        <span class="code-highlight">         (<span class="code-number">0.55</span>, <span class="code-number">0.60</span>, <span class="code-number">0.70</span>, <span class="code-number">1.0</span>))</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 8: FEEDBACK VISUAL (NEW) ===================== -->
+        <section class="slide" id="slide-8">
+            <div class="content-split code-slide">
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 graphics/renderer.py</span>
+                        <span class="code-lines">Visual Feedback System</span>
+                    </div>
+                    <pre><code><span class="code-keyword">def</span> <span class="code-function">draw_box</span>(x, y, z, status=<span class="code-string">'normal'</span>):
+    <span class="code-string">"""Desenha caixa com cor baseada no status"""</span>
+    
+    <span class="code-comment"># Define cor baseada no status</span>
+    <span class="code-keyword">if</span> status == <span class="code-string">'on_target'</span>:
+        <span class="code-comment"># Dourado - objetivo completo!</span>
+        color = (<span class="code-number">1.0</span>, <span class="code-number">0.84</span>, <span class="code-number">0.0</span>, <span class="code-number">1.0</span>)
+        shininess = <span class="code-number">64.0</span>
+
+    <span class="code-keyword">elif</span> status == <span class="code-string">'pushable'</span>:
+        <span class="code-comment"># Amarelo - pode empurrar agora</span>
+        color = (<span class="code-number">1.0</span>, <span class="code-number">1.0</span>, <span class="code-number">0.2</span>, <span class="code-number">1.0</span>)
+        shininess = <span class="code-number">32.0</span>
+
+    <span class="code-keyword">elif</span> status == <span class="code-string">'blocked'</span>:
+        <span class="code-comment"># Vermelho - bloqueada</span>
+        color = (<span class="code-number">0.9</span>, <span class="code-number">0.2</span>, <span class="code-number">0.2</span>, <span class="code-number">1.0</span>)
+        shininess = <span class="code-number">32.0</span>
+
+    <span class="code-keyword">else</span>:  <span class="code-comment"># normal</span>
+        <span class="code-comment"># Marrom - estado padrão</span>
+        color = (<span class="code-number">0.72</span>, <span class="code-number">0.48</span>, <span class="code-number">0.16</span>, <span class="code-number">1.0</span>)
+        shininess = <span class="code-number">32.0</span>
+
+    Materials.apply_box_material(color, shininess)
+    Primitives.draw_unit_cube()</code></pre>
+                </div>
+                <div class="text-content">
+                    <h2>Feedback Visual Dinâmico</h2>
+                    <p class="code-intro">Comunicação visual instantânea com o jogador</p>
+                    <div class="code-highlights">
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🟨</span>
+                            <strong>Dourado (On Target)</strong>
+                            <p>Caixa no objetivo correto. Sucesso!</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">✨</span>
+                            <strong>Amarelo (Pushable)</strong>
+                            <p>Indica que a caixa pode ser empurrada. Melhora UX.</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🟥</span>
+                            <strong>Vermelho (Blocked)</strong>
+                            <p>Parede ou obstáculo impedindo o movimento.</p>
+                        </div>
+                    </div>
+                    <div class="file-reference">📄 graphics/renderer.py:134-171</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 9: CÓDIGO - ÁUDIO ===================== -->
+        <section class="slide" id="slide-9">
+            <div class="content-split code-slide">
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 utils/sound.py</span>
+                        <span class="code-lines">Síntese de Áudio Procedural</span>
+                    </div>
+                    <pre><code><span class="code-keyword">def</span> <span class="code-function">_generate_tone</span>(<span class="code-param">self</span>, frequency, duration, volume=<span class="code-number">0.3</span>):
+    <span class="code-string">"""Gera onda sonora com NumPy + Envelope ADSR"""</span>
+    sample_rate = <span class="code-number">22050</span>
+    n_samples = int(duration * sample_rate)
+
+    <span class="code-comment"># 1. Gera onda senoidal pura</span>
+    <span class="code-highlight">t = np.linspace(<span class="code-number">0</span>, duration, n_samples)</span>
+    <span class="code-highlight">buf = np.sin(<span class="code-number">2</span> * np.pi * frequency * t)</span>
+
+    <span class="code-comment"># 2. Aplica Envelope ADSR</span>
+    <span class="code-comment"># Attack: suaviza início (evita 'click')</span>
+    attack = int(n_samples * <span class="code-number">0.1</span>)
+    <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(attack):
+        <span class="code-highlight">buf[i] *= i / attack</span>
+
+    <span class="code-comment"># Release: suaviza fim</span>
+    release = int(n_samples * <span class="code-number">0.2</span>)
+    <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(release):
+        <span class="code-highlight">buf[-(i+<span class="code-number">1</span>)] *= i / release</span>
+
+    <span class="code-comment"># 3. Converte para formato de áudio (int16)</span>
+    <span class="code-keyword">return</span> (buf * volume * <span class="code-number">32767</span>).astype(np.int16)</code></pre>
+                    <div class="code-note" style="margin-top: 1rem;">
+                        💡 <strong>Músicas 8-bit:</strong> Ondas quadradas geradas com <code>np.sign(np.sin(...))</code>
+                    </div>
+                </div>
+                <div class="text-content">
+                    <h2>Áudio Procedural</h2>
+                    <p class="code-intro">100% sintético usando NumPy - Zero arquivos WAV!</p>
+                    <div class="adsr-diagram">
+                        <div class="diagram-title">Envelope ADSR:</div>
+                        <div class="adsr-graph">
+                            <div class="adsr-stage">
+                                <div class="stage-name">A</div>
+                                <div class="stage-label">Attack</div>
+                                <p class="stage-desc">Subida gradual</p>
+                            </div>
+                            <div class="adsr-stage">
+                                <div class="stage-name">D</div>
+                                <div class="stage-label">Decay</div>
+                                <p class="stage-desc">Descida</p>
+                            </div>
+                            <div class="adsr-stage">
+                                <div class="stage-name">S</div>
+                                <div class="stage-label">Sustain</div>
+                                <p class="stage-desc">Nível mantido</p>
+                            </div>
+                            <div class="adsr-stage">
+                                <div class="stage-name">R</div>
+                                <div class="stage-label">Release</div>
+                                <p class="stage-desc">Fade out</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="audio-stats">
+                        <div class="audio-stat"><span class="stat-number">7</span> Efeitos sonoros</div>
+                        <div class="audio-stat"><span class="stat-number">6</span> Músicas 8-bit</div>
+                        <div class="audio-stat"><span class="stat-number">0</span> Arquivos .wav</div>
+                    </div>
+                    <div class="file-reference">📄 utils/sound.py:88-129</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 10: CÓDIGO - CÂMERA ===================== -->
+        <section class="slide" id="slide-10">
+            <div class="content-split code-slide">
+                <div class="text-content">
+                    <h2>Câmera Primeira Pessoa</h2>
+                    <p class="code-intro">Sistema de movimento e rotação baseado em vetores</p>
+                    <div class="code-highlights">
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🎥</span>
+                            <strong>Pitch Limiting</strong>
+                            <p>Limita rotação vertical a ±89° para evitar gimbal lock</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🧮</span>
+                            <strong>Vetores de Direção</strong>
+                            <p>Calcula forward/right com sin/cos do yaw para movimento relativo</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🏃</span>
+                            <strong>Sistema de Corrida</strong>
+                            <p>Multiplicador 1.65x na velocidade + sons de passo mais rápidos</p>
+                        </div>
+                    </div>
+                    <div class="file-reference">📄 game/player.py:122-182</div>
+                </div>
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 game/player.py</span>
+                        <span class="code-lines">Sistema de Movimento</span>
+                    </div>
+                    <pre><code><span class="code-keyword">def</span> <span class="code-function">move</span>(<span class="code-param">self</span>, input_forward, input_strafe, dt,
+         walls, boxes, run=<span class="code-boolean">False</span>, current_time=<span class="code-number">0.0</span>):
+    <span class="code-string">"""Move jogador baseado em input"""</span>
+
+    <span class="code-comment"># 1. Calcula vetores de direção da câmera</span>
+    <span class="code-highlight">yaw = math.radians(<span class="code-param">self</span>.camera_yaw)</span>
+    <span class="code-highlight">forward_x = math.sin(yaw)</span>
+    <span class="code-highlight">forward_z = -math.cos(yaw)</span>
+    <span class="code-highlight">right_x = math.cos(yaw)</span>
+    <span class="code-highlight">right_z = math.sin(yaw)</span>
+
+    <span class="code-comment"># 2. Combina inputs (WASD)</span>
+    move_x = forward_x * input_forward + right_x * input_strafe
+    move_z = forward_z * input_forward + right_z * input_strafe
+
+    <span class="code-comment"># 3. Normaliza movimento diagonal</span>
+    norm = math.hypot(move_x, move_z)
+    <span class="code-keyword">if</span> norm > <span class="code-number">0.0</span>:
+        move_x /= norm
+        move_z /= norm
+
+    <span class="code-comment"># 4. Aplica velocidade (com corrida)</span>
+    speed = MOVE_SPEED
+    <span class="code-keyword">if</span> run:
+        <span class="code-highlight">speed *= RUN_MULTIPLIER  <span class="code-comment"># 1.65x</span></span>
+
+    <span class="code-comment"># 5. Move com física (sliding collision)</span>
+    new_x, new_z, moved = Physics.smooth_move(...)
+
+    <span class="code-comment"># 6. Som de passos se moveu</span>
+    <span class="code-keyword">if</span> moved:
+        <span class="code-param">self</span>.play_step_sound(current_time)</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 11: CÓDIGO - NÍVEL ===================== -->
+        <section class="slide" id="slide-11">
+            <div class="content-split code-slide">
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 game/level.py</span>
+                        <span class="code-lines">Sistema de Partículas</span>
+                    </div>
+                    <pre><code><span class="code-comment"># Explosão de 50 partículas ao completar objetivo</span>
+<span class="code-keyword">if</span> dest_pos <span class="code-keyword">in</span> <span class="code-param">self</span>.objectives:
+    num_particles = <span class="code-number">50</span>
+
+    <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(num_particles):
+        <span class="code-comment"># Posição inicial (centro da caixa)</span>
+        px, py, pz = dest_pos[<span class="code-number">0</span>], <span class="code-number">0.5</span>, dest_pos[<span class="code-number">2</span>]
+
+        <span class="code-comment"># Velocidade aleatória (explosão vertical)</span>
+        speed = random.uniform(<span class="code-number">1.5</span>, <span class="code-number">4.0</span>)
+        angle_y = random.uniform(<span class="code-number">0</span>, math.pi * <span class="code-number">2</span>)
+        <span class="code-highlight">angle_v = random.uniform(math.pi / <span class="code-number">3</span>, math.pi / <span class="code-number">2</span>)</span>
+
+        vx = math.cos(angle_y) * math.cos(angle_v) * speed
+        <span class="code-highlight">vy = math.sin(angle_v) * speed  <span class="code-comment"># Vertical!</span></span>
+        vz = math.sin(angle_y) * math.cos(angle_v) * speed
+
+        <span class="code-comment"># Cores: Paleta Dourada/Brilho</span>
+        colors = [
+            (<span class="code-number">1.0</span>, <span class="code-number">0.84</span>, <span class="code-number">0.0</span>),  <span class="code-comment"># Gold</span>
+            (<span class="code-number">1.0</span>, <span class="code-number">1.0</span>, <span class="code-number">0.0</span>),   <span class="code-comment"># Yellow</span>
+            (<span class="code-number">1.0</span>, <span class="code-number">1.0</span>, <span class="code-number">1.0</span>),   <span class="code-comment"># White Sparkle</span>
+        ]
+        color = random.choice(colors)
+
+        <span class="code-comment"># [x, y, z, vx, vy, vz, r, g, b, time, size]</span>
+        <span class="code-param">self</span>.particles.append([
+            px, py, pz, vx, vy, vz,
+            color[<span class="code-number">0</span>], color[<span class="code-number">1</span>], color[<span class="code-number">2</span>],
+            current_time, particle_size
+        ])</code></pre>
+                </div>
+                <div class="text-content">
+                    <h2>Sistema de Partículas</h2>
+                    <p class="code-intro">Feedback visual espetacular ao completar objetivos</p>
+                    <div class="physics-diagram">
+                        <div class="diagram-title">Características:</div>
+                        <div class="diagram-step">
+                            <span class="step-number">50</span>
+                            <p><strong>Partículas por efeito</strong> - densidade visual alta</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">💥</span>
+                            <p><strong>Explosão vertical</strong> - ângulo 60-90° para cima</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">🎨</span>
+                            <p><strong>Cores variadas</strong> - dourado, amarelo, branco (sparkle)</p>
+                        </div>
+                        <div class="diagram-step">
+                            <span class="step-number">⚙️</span>
+                            <p><strong>Física realista</strong> - gravidade, bounce, atrito</p>
+                        </div>
+                    </div>
+                    <div class="code-note">
+                        💡 <strong>Técnica:</strong> Billboard rendering - partículas sempre de frente para câmera
+                    </div>
+                    <div class="file-reference">📄 game/level.py:310-351</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 12: DISPLAY LISTS (NEW) ===================== -->
+        <section class="slide" id="slide-12">
+            <div class="content-split code-slide">
+                <div class="text-content">
+                    <h2>Otimização com Display Lists</h2>
+                    <p class="code-intro">Boost de +90% na performance de renderização</p>
+                    <div class="code-highlights">
+                        <div class="highlight-point">
+                            <span class="highlight-icon">📉</span>
+                            <strong>O Problema</strong>
+                            <p>Recriar 3200+ triângulos de grama a cada frame causava queda de FPS.</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">🚀</span>
+                            <strong>A Solução</strong>
+                            <p>Pré-compilar geometria estática na GPU. Renderiza com 1 chamada.</p>
+                        </div>
+                        <div class="highlight-point">
+                            <span class="highlight-icon">⚡</span>
+                            <strong>Resultado</strong>
+                            <p>120 FPS estáveis e uso de CPU reduzido drasticamente.</p>
+                        </div>
+                    </div>
+                    <div class="file-reference">📄 graphics/primitives.py</div>
+                </div>
+                <div class="code-content">
+                    <div class="code-header">
+                        <span class="code-file">📄 graphics/primitives.py</span>
+                        <span class="code-lines">Optimization System</span>
+                    </div>
+                    <pre><code><span class="code-decorator">@staticmethod</span>
+<span class="code-keyword">def</span> <span class="code-function">create_grass_display_list</span>():
+    <span class="code-string">"""Pré-compila geometria estática"""</span>
+    display_list = glGenLists(<span class="code-number">1</span>)
+    glNewList(display_list, GL_COMPILE)
+
+    <span class="code-comment"># Gera ~3200 folhas de grama</span>
+    <span class="code-keyword">for</span> x <span class="code-keyword">in</span> range(-<span class="code-number">20</span>, <span class="code-number">21</span>):
+        <span class="code-keyword">for</span> z <span class="code-keyword">in</span> range(-<span class="code-number">20</span>, <span class="code-number">21</span>):
+            <span class="code-comment"># 8 folhas por unidade</span>
+            <span class="code-keyword">for</span> _ <span class="code-keyword">in</span> range(<span class="code-number">8</span>):
+                <span class="code-comment"># Posição aleatória</span>
+                px = x + random.uniform(-<span class="code-number">0.5</span>, <span class="code-number">0.5</span>)
+                pz = z + random.uniform(-<span class="code-number">0.5</span>, <span class="code-number">0.5</span>)
+
+                <span class="code-comment"># Renderiza folha de grama...</span>
+
+    glEndList()
+    <span class="code-keyword">return</span> display_list
+
+<span class="code-keyword">def</span> <span class="code-function">draw_floor</span>():
+    <span class="code-keyword">if</span> _grass_list:
+        <span class="code-highlight">glCallList(_grass_list)  <span class="code-comment"># RÁPIDO!</span></span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 13: DESAFIOS ENFRENTADOS ===================== -->
+        <section class="slide" id="slide-13">
+            <div class="content-center">
+                <h2 class="slide-title">Desafios Enfrentados</h2>
+
+                <div class="challenges-grid">
+                    <div class="challenge-card major">
+                        <div class="challenge-icon">🐛</div>
+                        <h3>Física: Sticky Walls</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Jogador travava em cantos de paredes ao tentar mover
+                                diagonalmente</p>
+                            <p><strong>Causa:</strong> Sistema de colisão bloqueava movimento quando QUALQUER eixo
+                                colidia</p>
+                            <p><strong>Solução:</strong> Implementei <strong>Sliding Collision</strong> - decompõe vetor
+                                de movimento em X e Z, tenta cada eixo separadamente com fricção de 70%</p>
+                            <p><strong>Resultado:</strong> Movimento fluido deslizando ao longo de paredes
+                                (game/physics.py:154-213)</p>
+                        </div>
+                    </div>
+
+                    <div class="challenge-card major">
+                        <div class="challenge-icon">💾</div>
+                        <h3>OpenGL: Memory Leaks</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Performance degradava após alguns minutos - FPS caía de 120
+                                para 30</p>
+                            <p><strong>Causa:</strong> Grama 3D recriava geometria a cada frame (3200+ triângulos)</p>
+                            <p><strong>Solução:</strong> Implementei <strong>Display Lists</strong> - pré-compila
+                                geometria estática uma vez</p>
+                            <p><strong>Resultado:</strong> Boost de +90% na renderização, FPS estáveis em 120
+                                (graphics/primitives.py)</p>
+                        </div>
+                    </div>
+
+                    <div class="challenge-card">
+                        <div class="challenge-icon">🎵</div>
+                        <h3>Áudio: Garbage Collection</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Sons cortavam aleatoriamente</p>
+                            <p><strong>Solução:</strong> Buffer management - lista _sound_buffers mantém referências
+                                (utils/sound.py:53)</p>
+                        </div>
+                    </div>
+
+                    <div class="challenge-card">
+                        <div class="challenge-icon">🎨</div>
+                        <h3>Renderização: Z-Fighting</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Sombras piscavam no chão</p>
+                            <p><strong>Solução:</strong> SHADOW_OFFSET_Y = 0.01 + glDepthMask (config.py:124)</p>
+                        </div>
+                    </div>
+
+                    <div class="challenge-card">
+                        <div class="challenge-icon">🔀</div>
+                        <h3>Threading: Audio Sync</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Música e efeitos competiam</p>
+                            <p><strong>Solução:</strong> Canais separados no pygame.mixer</p>
+                        </div>
+                    </div>
+
+                    <div class="challenge-card">
+                        <div class="challenge-icon">🧪</div>
+                        <h3>Testes: Mock de OpenGL</h3>
+                        <div class="challenge-content">
+                            <p><strong>Problema:</strong> Pytest falhava sem contexto OpenGL</p>
+                            <p><strong>Solução:</strong> Separei lógica pura (testável) de rendering</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 14: USO DE IA ===================== -->
+        <section class="slide" id="slide-14">
+            <div class="content-center">
+                <h2 class="slide-title">Uso de IA no Projeto</h2>
+
+                <div class="ai-usage-grid">
+                    <div class="ai-card productivity">
+                        <div class="ai-icon">🤖</div>
+                        <h3>Ferramentas Utilizadas</h3>
+                        <ul class="ai-list">
+                            <li><strong>GitHub Copilot:</strong> Autocomplete de código, boilerplate</li>
+                            <li><strong>Claude/ChatGPT:</strong> Debugging, explicações de conceitos, revisão de
+                                arquitetura</li>
+                            <li><strong>Gemini:</strong> Pesquisa de documentação OpenGL/PyGame</li>
+                        </ul>
+                    </div>
+
+                    <div class="ai-card tasks">
+                        <div class="ai-icon">⚙️</div>
+                        <h3>Tarefas Resolvidas com IA</h3>
+                        <ul class="ai-list">
+                            <li><strong>Boilerplate:</strong> Estrutura inicial de classes, docstrings, type hints</li>
+                            <li><strong>Debugging:</strong> Explicação de erros OpenGL obscuros (ex: "invalid
+                                operation")</li>
+                            <li><strong>Algoritmos:</strong> Sugestões de sliding collision, AABB otimizado</li>
+                            <li><strong>Refatoração:</strong> Identificar code smells, sugerir design patterns</li>
+                            <li><strong>Documentação:</strong> Geração de README, comentários técnicos</li>
+                        </ul>
+                    </div>
+
+                    <div class="ai-card impact">
+                        <div class="ai-icon">📊</div>
+                        <h3>Impacto no Projeto</h3>
+                        <div class="impact-stats">
+                            <div class="impact-item">
+                                <span class="impact-number">~30%</span>
+                                <p>Redução de tempo em tarefas repetitivas</p>
+                            </div>
+                            <div class="impact-item">
+                                <span class="impact-number">+50%</span>
+                                <p>Mais rápido para aprender conceitos novos (OpenGL)</p>
+                            </div>
+                            <div class="impact-item">
+                                <span class="impact-number">70%</span>
+                                <p>Código revisado por IA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-card lessons">
+                        <div class="ai-icon">💡</div>
+                        <h3>Lições Aprendidas</h3>
+                        <ul class="ai-list">
+                            <li><strong>✅ IA acelera:</strong> Mas não substitui entendimento profundo</li>
+                            <li><strong>⚠️ Sempre validar:</strong> Sugestões nem sempre estão corretas (especialmente
+                                em OpenGL)</li>
+                            <li><strong>🔍 Revisão crítica:</strong> Essencial testar e entender código gerado</li>
+                            <li><strong>🎯 Melhor uso:</strong> Exploração de alternativas, não solução mágica</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="ai-note">
+                    <p><strong>🎓 Conclusão:</strong> IA foi uma ferramenta de produtividade, não um atalho. Todo código
+                        foi compreendido, testado e adaptado pela equipe.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 15: APRENDIZADOS ===================== -->
+        <section class="slide" id="slide-15">
+            <div class="content-center">
+                <h2 class="slide-title">Aprendizados do Desenvolvimento</h2>
+                <div class="learnings-grid">
+                    <div class="learning-card major">
+                        <div class="learning-icon">📐</div>
+                        <h3>Matemática 3D Aplicada</h3>
+                        <ul>
+                            <li><strong>Matrizes de Transformação:</strong> glTranslatef, glRotatef, glScalef - pipeline
+                                OpenGL</li>
+                            <li><strong>Vetores e Normalização:</strong> Cálculo de direções de câmera com sin/cos</li>
+                            <li><strong>Decomposição de Movimento:</strong> Sliding collision via separação de eixos
+                            </li>
+                            <li><strong>Síntese de Ondas:</strong> Senoidais (2πft), quadradas (sign), envelope ADSR
+                            </li>
+                            <li><strong>Billboard Rendering:</strong> Partículas sempre de frente para câmera</li>
+                        </ul>
+                    </div>
+
+                    <div class="learning-card major">
+                        <div class="learning-icon">🏗️</div>
+                        <h3>Arquitetura e Patterns</h3>
+                        <ul>
+                            <li><strong>MVC-like:</strong> Separação clara game/ (Model), graphics/ (View), main.py
+                                (Controller)</li>
+                            <li><strong>Singleton:</strong> SoundManager e Logger - instância única global</li>
+                            <li><strong>State Pattern:</strong> Gerenciamento de estados do jogo (Menu/Playing/Paused)
+                            </li>
+                            <li><strong>SOLID Principles:</strong> Single Responsibility, Open/Closed, Dependency
+                                Inversion</li>
+                        </ul>
+                    </div>
+
+                    <div class="learning-card">
+                        <div class="learning-icon">⚡</div>
+                        <h3>Performance OpenGL</h3>
+                        <ul>
+                            <li>Display Lists para geometria estática (+90% boost)</li>
+                            <li>Face culling (glCullFace) e depth testing</li>
+                            <li>Batching de state changes</li>
+                            <li>Delta time para framerate independente</li>
+                        </ul>
+                    </div>
+
+                    <div class="learning-card">
+                        <div class="learning-icon">🧪</div>
+                        <h3>Qualidade de Código</h3>
+                        <ul>
+                            <li>28 testes automatizados (pytest)</li>
+                            <li>Type hints para type safety</li>
+                            <li>Sistema de logging profissional</li>
+                            <li>Exceções específicas (não genéricas)</li>
+                        </ul>
+                    </div>
+
+                    <div class="learning-card">
+                        <div class="learning-icon">🐛</div>
+                        <h3>Debugging Complexo</h3>
+                        <ul>
+                            <li>Problemas de física (sticky walls)</li>
+                            <li>Memory leaks em OpenGL (Display Lists)</li>
+                            <li>Audio threading synchronization</li>
+                            <li>Z-fighting em sombras</li>
+                        </ul>
+                    </div>
+
+                    <div class="learning-card">
+                        <div class="learning-icon">🎨</div>
+                        <h3>Computação Gráfica</h3>
+                        <ul>
+                            <li>Pipeline OpenGL (vertex → fragment)</li>
+                            <li>Iluminação Phong (ambient + diffuse + specular)</li>
+                            <li>Blending e transparência</li>
+                            <li>Texturas procedurais (ruído de Perlin)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 16: CONCLUSÃO ===================== -->
+        <section class="slide" id="slide-16">
+            <div class="content-center">
+                <h1 class="conclusion-title">Conclusão</h1>
+                <p class="conclusion-text">
+                    BoxPush 3D demonstra que é possível criar<br>
+                    jogos complexos e performáticos em <strong>Python puro</strong>,<br>
+                    aplicando <strong>arquitetura profissional</strong> e<br>
+                    <strong>boas práticas de engenharia de software</strong>.
+                </p>
+
+                <div class="conclusion-stats">
+                    <div class="conclusion-stat">
+                        <span class="stat-icon">📦</span>
+                        <strong>3743 linhas</strong>
+                        <p>Código organizado em 14 módulos</p>
+                    </div>
+                    <div class="conclusion-stat">
+                        <span class="stat-icon">🎨</span>
+                        <strong>100% Procedural</strong>
+                        <p>Zero assets externos</p>
+                    </div>
+                    <div class="conclusion-stat">
+                        <span class="stat-icon">🧪</span>
+                        <strong>28 Testes</strong>
+                        <p>Qualidade 92%</p>
+                    </div>
+                    <div class="conclusion-stat">
+                        <span class="stat-icon">⚡</span>
+                        <strong>120 FPS</strong>
+                        <p>Performance otimizada</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>📋 Próximos Passos (Possíveis Melhorias)</h3>
+                    <div class="steps-grid">
+                        <div class="step-item">🎮 Mais níveis e editor de níveis</div>
+                        <div class="step-item">🌐 Sistema de shaders (GLSL)</div>
+                        <div class="step-item">💾 Sistema de save/load completo</div>
+                        <div class="step-item">🏆 Sistema de conquistas</div>
+                        <div class="step-item">🎵 Mais músicas e efeitos</div>
+                        <div class="step-item">📊 Leaderboard de movimentos</div>
+                    </div>
+                </div>
+
+                <div class="tech-showcase">
+                    <div class="tech-badge">Python 3.8+</div>
+                    <div class="tech-badge">PyOpenGL</div>
+                    <div class="tech-badge">NumPy</div>
+                    <div class="tech-badge">Pygame</div>
+                </div>
+
+                <div class="conclusion-links">
+                    <a href="https://github.com/ErickIV/Ambiente3D---BoxPush" target="_blank" class="btn-github">
+                        📁 Ver Código Fonte no GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SLIDE 17: PERGUNTAS ===================== -->
+        <section class="slide" id="slide-17">
+            <div class="content-center">
+                <h1 class="qa-title">Obrigado!</h1>
+                <h2 class="qa-subtitle">❓ Perguntas?</h2>
+
+                <div class="qa-info">
+                    <p><strong>Equipe:</strong></p>
+                    <p>Erick Vieira • Patrick Lohn • Rafael Sonoki</p>
+                    <p style="opacity: 0.7; margin-top: 1rem;">Ciência da Computação - Unisul</p>
+                </div>
+
+                <div class="qa-links">
+                    <div class="qa-link-card">
+                        <div class="qa-link-icon">🔗</div>
+                        <strong>Repositório GitHub</strong>
+                        <p>github.com/ErickIV/Ambiente3D---BoxPush</p>
+                    </div>
+                    <div class="qa-link-card">
+                        <div class="qa-link-icon">📊</div>
+                        <strong>Estatísticas</strong>
+                        <p>3743 linhas • 14 módulos • 28 testes</p>
+                    </div>
+                    <div class="qa-link-card">
+                        <div class="qa-link-icon">🏆</div>
+                        <strong>Qualidade</strong>
+                        <p>92% • Type Hints • Testes • Logging</p>
+                    </div>
+                </div>
+
+                <div class="demo-reminder">
+                    <p style="font-size: 1.2rem; margin-top: 2rem;">
+                        <strong>💻 Demonstração ao vivo disponível!</strong>
+                    </p>
+                    <code
+                        style="background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 1.1rem;">
+                        python main.py
+                    </code>
+                </div>
+            </div>
+            <div class="background-gradient"></div>
+        </section>
+
+    </main>
+
+    <div class="controls">
+        <button id="prevBtn" class="nav-btn" aria-label="Slide anterior">←</button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">17</span>
+        </div>
+        <button id="nextBtn" class="nav-btn" aria-label="Próximo slide">→</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
