@@ -107,54 +107,197 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
     
     @staticmethod
+    def draw_panel(x, y, width, height, alpha=0.75):
+        """Desenha painel glassmorphism."""
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(0.04, 0.08, 0.16, alpha)
+        glBegin(GL_QUADS)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        glLineWidth(1.5)
+        glColor4f(0.4, 0.6, 1.0, 0.3)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        glLineWidth(1.0)
+        glDisable(GL_BLEND)
+    
+    @staticmethod
+    def draw_progress_bar(x, y, width, height, progress, max_val=1.0):
+        """Desenha barra de progresso."""
+        norm = min(1.0, max(0.0, progress / max_val))
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(0.2, 0.2, 0.25, 0.6)
+        glBegin(GL_QUADS)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        if norm > 0:
+            fw = width * norm
+            r = 0.2 if norm >= 1.0 else 0.0
+            g = 1.0 if norm >= 1.0 else (0.8 if norm >= 0.5 else 0.6)
+            b = 0.3 if norm >= 1.0 else (0.9 if norm >= 0.5 else 1.0)
+            glBegin(GL_QUADS)
+            glColor4f(r*0.7, g*0.7, b*0.7, 0.9)
+            glVertex2f(x, y)
+            glColor4f(r, g, b, 0.9)
+            glVertex2f(x + fw, y)
+            glVertex2f(x + fw, y + height)
+            glColor4f(r*0.7, g*0.7, b*0.7, 0.9)
+            glVertex2f(x, y + height)
+            glEnd()
+        glLineWidth(1.0)
+        glColor4f(0.5, 0.5, 0.6, 0.8)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        glDisable(GL_BLEND)
+    
+    @staticmethod
     def draw_hud(level_index, stats, sound_manager=None):
         """
-        Desenha HUD principal do jogo.
+        Desenha HUD principal do jogo com visual moderno.
         
         Args:
             level_index: Índice do nível atual
             stats: Dict com estatísticas (boxes_on_target, total_boxes, move_count)
             sound_manager: Gerenciador de som para mostrar status
         """
-        y = WINDOW_HEIGHT - 36
+        # Setup ortho 2D
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
         
-        # Controles
-        UI.draw_text(20, y, 
-            "WASD: mover | SHIFT: correr | Mouse: olhar | Espaço: empurrar | R: reset | ESC: sair",
-            16)
+        # === PAINEL SUPERIOR ESQUERDO: INFO DO NÍVEL ===
+        panel_x = 15
+        panel_y = WINDOW_HEIGHT - 140
+        panel_w = 280
+        panel_h = 125
+        UI.draw_panel(panel_x, panel_y, panel_w, panel_h)
         
-        # Status do nível
-        y -= 32
-        UI.draw_text(20, y,
-            f"Level {level_index + 1} | Caixas: {stats['boxes_on_target']}/{stats['total_boxes']}",
-            18)
+        # Conteúdo do painel
+        text_x = panel_x + 12
+        text_y = panel_y + panel_h - 25
+        
+        # Nível
+        glColor3f(1.0, 0.9, 0.2)  # Amarelo dourado
+        UI.draw_text(text_x, text_y, f"* NIVEL {level_index + 1}", 18)
+        
+        # Caixas
+        text_y -= 28
+        glColor3f(0.9, 0.9, 1.0)
+        UI.draw_text(text_x, text_y, 
+            f"[] Caixas: {stats['boxes_on_target']}/{stats['total_boxes']}", 16)
+        
+        # Barra de progresso
+        text_y -= 24
+        bar_x = text_x + 4
+        bar_w = panel_w - 70  # Reduzido para caber a porcentagem
+        UI.draw_progress_bar(bar_x, text_y - 2, bar_w, 14, 
+            stats['boxes_on_target'], stats['total_boxes'])
+        
+        # Porcentagem (na mesma linha, à direita)
+        if stats['total_boxes'] > 0:
+            pct = int((stats['boxes_on_target'] / stats['total_boxes']) * 100)
+            glColor3f(0.7, 0.8, 0.9)
+            pct_text = f"{pct}%"
+            UI.draw_text(bar_x + bar_w + 10, text_y - 2, pct_text, 14)
         
         # Movimentos
-        y -= 32
-        UI.draw_text(20, y, f"Movimentos: {stats['move_count']}", 18)
+        text_y -= 28
+        glColor3f(0.9, 0.9, 1.0)
+        UI.draw_text(text_x, text_y, f"# Movimentos: {stats['move_count']}", 16)
         
-        # Status de áudio (canto superior direito)
+        # === PAINEL SUPERIOR DIREITO: CONTROLES DE ÁUDIO ===
         if sound_manager:
-            audio_y = WINDOW_HEIGHT - 36
-            audio_x = WINDOW_WIDTH - 150
+            audio_panel_w = 170
+            audio_panel_h = 100
+            audio_panel_x = WINDOW_WIDTH - audio_panel_w - 15
+            audio_panel_y = WINDOW_HEIGHT - audio_panel_h - 15
+            UI.draw_panel(audio_panel_x, audio_panel_y, audio_panel_w, audio_panel_h)
             
-            # Status da música
-            music_status = "🎵 ON" if sound_manager.music_enabled else "🔇 OFF"
-            UI.draw_text(audio_x, audio_y, f"M: {music_status}", 16)
+            audio_text_x = audio_panel_x + 12
+            audio_text_y = audio_panel_y + audio_panel_h - 25
             
-            # Status dos sons
-            audio_y -= 28
-            sfx_status = "🔊 ON" if sound_manager.sfx_enabled else "🔇 OFF"
-            UI.draw_text(audio_x, audio_y, f"N: {sfx_status}", 16)
+            # Música
+            music_icon = "+" if sound_manager.music_enabled else "X"
+            music_status = "ON" if sound_manager.music_enabled else "OFF"
+            music_color = (0.5, 1.0, 0.5) if sound_manager.music_enabled else (0.8, 0.4, 0.4)
+            glColor3f(*music_color)
+            UI.draw_text(audio_text_x, audio_text_y, f"[{music_icon}] Musica [M]", 14)
+            glColor3f(0.7, 0.7, 0.8)
+            UI.draw_text(audio_text_x + 130, audio_text_y, music_status, 14)
+            
+            # Sons
+            audio_text_y -= 25
+            sfx_icon = "+" if sound_manager.sfx_enabled else "X"
+            sfx_status = "ON" if sound_manager.sfx_enabled else "OFF"
+            sfx_color = (0.5, 1.0, 0.5) if sound_manager.sfx_enabled else (0.8, 0.4, 0.4)
+            glColor3f(*sfx_color)
+            UI.draw_text(audio_text_x, audio_text_y, f"[{sfx_icon}] Sons   [N]", 14)
+            glColor3f(0.7, 0.7, 0.8)
+            UI.draw_text(audio_text_x + 130, audio_text_y, sfx_status, 14)
+
+            # Pause Hint
+            audio_text_y -= 25
+            glColor3f(1.0, 1.0, 0.8)
+            UI.draw_text(audio_text_x, audio_text_y, "[!] Pause  [P]", 14)
+
+        # === PAINEL INFERIOR: DICAS E CONTROLES ===
+        tip_panel_h = 50
+        tip_panel_w = WINDOW_WIDTH - 30
+        tip_panel_x = 15
+        tip_panel_y = 15
+        UI.draw_panel(tip_panel_x, tip_panel_y, tip_panel_w, tip_panel_h, alpha=0.65)
         
-        # Dicas
-        y -= 32
+        tip_text_y = tip_panel_y + 28
+        
+        # Dica contextual
         if stats['boxes_on_target'] == 0:
-            UI.draw_text(20, y, 
-                "Dica: Empurre as caixas para os X vermelhos!", 16)
+            glColor3f(1.0, 0.8, 0.3)
+            UI.draw_text(tip_panel_x + 12, tip_text_y, 
+                "! Dica: Empurre as caixas para os alvos vermelhos!", 14)
         elif stats['boxes_on_target'] < stats['total_boxes']:
-            UI.draw_text(20, y, 
-                "Continue empurrando as caixas restantes!", 16)
+            glColor3f(0.6, 0.9, 1.0)
+            UI.draw_text(tip_panel_x + 12, tip_text_y, 
+                f"! Continue! Faltam {stats['total_boxes'] - stats['boxes_on_target']} caixas", 14)
+        else:
+            glColor3f(0.5, 1.0, 0.5)
+            UI.draw_text(tip_panel_x + 12, tip_text_y, 
+                "** Perfeito! Todas as caixas no lugar!", 14)
+        
+        # Controles (linha de baixo)
+        tip_text_y -= 18
+        glColor3f(0.6, 0.6, 0.7)
+        UI.draw_text(tip_panel_x + 12, tip_text_y, 
+            "WASD: mover | SHIFT: correr | Mouse: olhar | ESPAÇO: empurrar | R: reset", 12)
+        
+        # Restaura estados
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+        glPopMatrix()
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
     
     @staticmethod
     def draw_victory_screen(move_count):
@@ -354,7 +497,8 @@ class UI:
         cx = WINDOW_WIDTH // 2
         cy = WINDOW_HEIGHT // 2
         return [
-            ("INICIAR JOGO", "start", 0, 20),
+            ("NOVO JOGO", "start", 0, 80),
+            ("CONTINUAR", "continue", 0, 20),
             ("CONFIGURAÇÕES", "settings", 0, -50),
             ("SAIR", "quit", 0, -120)
         ]
@@ -455,12 +599,96 @@ class UI:
         glMatrixMode(GL_MODELVIEW)
 
     @staticmethod
+    def get_pause_buttons():
+        """Retorna lista de botões do menu de pause: (label, action, x_off, y_off)"""
+        return [
+            ("CONTINUAR", "resume", 0, 40),
+            ("SALVAR", "save", 0, -20),
+            ("CONFIGURACOES", "settings", 0, -80),
+            ("MENU PRINCIPAL", "main_menu", 0, -140)
+        ]
+
+    @staticmethod
+    def get_pause_action(mouse_x, mouse_y):
+        """Retorna ação do botão de pause clicado ou None"""
+        cx = WINDOW_WIDTH // 2
+        cy = WINDOW_HEIGHT // 2
+        buttons = UI.get_pause_buttons()
+        
+        for label, action, x_off, y_off in buttons:
+            bx = cx + x_off
+            by = cy + y_off
+            width, height = 220, 50
+            
+            if (bx - width//2 <= mouse_x <= bx + width//2) and \
+               (by - height//2 <= mouse_y <= by + height//2):
+                return action
+        return None
+
+    @staticmethod
+    def draw_pause_menu(mouse_pos=(0,0)):
+        """
+        Desenha menu de pause sobre o jogo.
+        """
+        cx = WINDOW_WIDTH // 2
+        cy = WINDOW_HEIGHT // 2
+        mx, my = mouse_pos
+        gl_my = WINDOW_HEIGHT - my
+        
+        # Overlay semi-transparente escuro
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        
+        # Fundo escuro transparente (blur effect simulado)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(0.0, 0.0, 0.0, 0.7)
+        glBegin(GL_QUADS)
+        glVertex2f(0, 0)
+        glVertex2f(WINDOW_WIDTH, 0)
+        glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT)
+        glVertex2f(0, WINDOW_HEIGHT)
+        glEnd()
+        glDisable(GL_BLEND)
+        
+        # Título PAUSE
+        glColor3f(1.0, 1.0, 1.0)
+        UI.draw_text(cx - 60, cy + 120, "JOGO PAUSADO", 24)
+        
+        # Linha decorativa
+        glColor3f(0.3, 0.6, 1.0)
+        glLineWidth(2.0)
+        glBegin(GL_LINES)
+        glVertex2f(cx - 150, cy + 100)
+        glVertex2f(cx + 150, cy + 100)
+        glEnd()
+        glLineWidth(1.0)
+        
+        # Botões
+        buttons = UI.get_pause_buttons()
+        for label, action, x_off, y_off in buttons:
+            UI.draw_button(cx + x_off, cy + y_off, 220, 50, label, mx, gl_my)
+        
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+        
+        glPopMatrix()
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+
+    @staticmethod
     def draw_slider(x, y, width, height, value, label, is_selected=False):
         """
         Desenha um slider com label.
-        
-        Args:
-            x, y: Posição central
             width, height: Dimensões da barra
             value: Valor atual (0.0 a 1.0)
             label: Texto do label
