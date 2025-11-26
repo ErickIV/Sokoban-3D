@@ -319,27 +319,27 @@ class Level:
                 py = 0.5
                 pz = dest_pos[2]
                 
-                # Velocidade aleatória (explosão esférica) - reduzida para animação mais lenta
-                speed = random.uniform(0.5, 3.0)
+                # Velocidade aleatória (explosão mais vertical e controlada)
+                speed = random.uniform(1.5, 4.0)
                 angle_y = random.uniform(0, math.pi * 2)
-                angle_v = random.uniform(0, math.pi / 2) # Apenas para cima
+                angle_v = random.uniform(math.pi / 3, math.pi / 2) # Mais vertical (60-90 graus)
                 
                 vx = math.cos(angle_y) * math.cos(angle_v) * speed
                 vy = math.sin(angle_v) * speed
                 vz = math.sin(angle_y) * math.cos(angle_v) * speed
                 
-                # Cores mais brilhantes e saturadas
+                # Cores: Paleta Dourada/Brilho (Elegante)
                 colors = [
-                    (1.0, 0.9, 0.2),  # Dourado brilhante
-                    (0.2, 1.0, 1.0),  # Cyan elétrico
-                    (1.0, 0.2, 1.0),  # Magenta neon
-                    (1.0, 1.0, 0.5),  # Amarelo
-                    (1.0, 0.6, 0.2),  # Laranja
+                    (1.0, 0.84, 0.0),  # Gold
+                    (1.0, 1.0, 0.0),   # Yellow
+                    (1.0, 0.9, 0.5),   # Light Gold
+                    (1.0, 1.0, 1.0),   # White (Sparkle)
+                    (0.8, 0.5, 0.2),   # Bronze/Dark Gold
                 ]
                 color = random.choice(colors)
                 
-                # Tamanho aleatório para variedade (0.3 a 0.8)
-                particle_size = random.uniform(0.3, 0.8)
+                # Tamanho menor para parecer confete/faísca
+                particle_size = random.uniform(0.15, 0.4)
                 
                 # [x, y, z, vx, vy, vz, r, g, b, start_time, size]
                 self.particles.append([
@@ -362,7 +362,7 @@ class Level:
             current_time: Tempo atual
             dt: Delta time
         """
-        gravity = -5.0  # Reduzido para efeito mais "mágico"
+        gravity = -2.0  # Gravidade bem leve para flutuar
         
         # Atualiza e filtra partículas vivas
         alive_particles = []
@@ -371,7 +371,7 @@ class Level:
             start_time = p[9]
             age = current_time - start_time
             
-            if age < 4.0: # Tempo de vida (aumentado para melhor visibilidade)
+            if age < 3.0: # Tempo de vida
                 # Física
                 p[0] += p[3] * dt # x += vx * dt
                 p[1] += p[4] * dt # y += vy * dt
@@ -379,12 +379,12 @@ class Level:
                 
                 p[4] += gravity * dt # vy += g * dt
                 
-                # Colisão com chão - mais bounce
+                # Colisão com chão - bounce suave
                 if p[1] < 0.1:
                     p[1] = 0.1
-                    p[4] *= -0.7 # Mais bounce (antes 0.5)
-                    p[3] *= 0.8 # Atrito
-                    p[5] *= 0.8
+                    p[4] *= -0.5 # Bounce suave
+                    p[3] *= 0.9 # Atrito
+                    p[5] *= 0.9
                 
                 alive_particles.append(p)
                 

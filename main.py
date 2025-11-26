@@ -57,6 +57,7 @@ class GameState:
     
     def __init__(self):
         self.state = GAME_STATE_MENU
+        self.previous_state = GAME_STATE_MENU  # Para voltar das configurações
         self.last_push_time = 0.0
         self.victory_time = 0.0
         self.settings_option = 0  # 0: Music, 1: SFX, 2: Sensitivity
@@ -66,6 +67,9 @@ class GameState:
     
     def is_playing(self):
         return self.state == GAME_STATE_PLAYING
+    
+    def is_paused(self):
+        return self.state == GAME_STATE_PAUSED
     
     def is_victory(self):
         return self.state == GAME_STATE_WIN
@@ -82,6 +86,9 @@ class GameState:
     def set_playing(self):
         self.state = GAME_STATE_PLAYING
     
+    def set_paused(self):
+        self.state = GAME_STATE_PAUSED
+    
     def set_victory(self, current_time):
         self.state = GAME_STATE_WIN
         self.victory_time = current_time
@@ -90,7 +97,14 @@ class GameState:
         self.state = GAME_STATE_FINAL_VICTORY
 
     def set_settings(self):
+        # Salva estado anterior se não estiver já em settings
+        if self.state != GAME_STATE_SETTINGS:
+            self.previous_state = self.state
         self.state = GAME_STATE_SETTINGS
+    
+    def restore_previous_state(self):
+        """Volta para o estado anterior (usado ao sair de settings)"""
+        self.state = self.previous_state
 
 
 class Game:
@@ -157,7 +171,7 @@ class Game:
                 # ESC sempre sai
                 if event.key == K_ESCAPE:
                     if self.game_state.is_settings():
-                        self.game_state.set_menu()
+                        self.game_state.restore_previous_state()
                         self.sound.play('menu_select')
                     elif self.game_state.is_menu():
                         return False
@@ -215,6 +229,20 @@ class Game:
                             config.MOUSE_SENSITIVITY = new_sens
                             self.player.set_sensitivity(new_sens)
 
+                # P: Pause/Unpause
+                elif event.key == K_p:
+                    if self.game_state.is_playing():
+                        self.game_state.set_paused()
+                        self.sound.stop_music() # Opcional: pausar música ou diminuir volume
+                        pygame.event.set_grab(False)
+                        pygame.mouse.set_visible(True)
+                    elif self.game_state.is_paused():
+                        self.game_state.set_playing()
+                        self.sound.play_music(self.level.current_level_index) # Retoma música
+                        pygame.event.set_grab(True)
+                        pygame.mouse.set_visible(False)
+                        pygame.mouse.set_pos((self.window_width // 2, self.window_height // 2))
+
                 # ENTER: Controle de fluxo
                 if event.key == K_RETURN:
                     self.sound.play('menu_select')
@@ -258,6 +286,12 @@ class Game:
                         if action == 'start':
                             self.sound.play('menu_select')
                             self.start_game()
+                        elif action == 'continue':
+                            self.sound.play('menu_select')
+                            if not self.load_game():
+                                # Se falhar (ex: sem save), inicia novo jogo ou dá feedback
+                                # Por enquanto, inicia novo jogo
+                                self.start_game()
                         elif action == 'settings':
                             self.sound.play('menu_select')
                             self.game_state.set_settings()
@@ -270,8 +304,27 @@ class Game:
                             s_id, val = data
                             self._update_setting(s_id, val)
                         elif action == 'back':
-                            self.game_state.set_menu()
+                            self.game_state.restore_previous_state()
                             self.sound.play('menu_select')
+                    
+                    elif self.game_state.is_paused():
+                        action = UI.get_pause_action(mx, gl_my)
+                        if action == 'resume':
+                            self.sound.play('menu_select')
+                            self.game_state.set_playing()
+                            self.sound.play_music(self.level.current_level_index)
+                            pygame.event.set_grab(True)
+                            pygame.mouse.set_visible(False)
+                            pygame.mouse.set_pos((self.window_width // 2, self.window_height // 2))
+                        elif action == 'save':
+                            self.save_game()
+                        elif action == 'settings':
+                            self.sound.play('menu_select')
+                            self.game_state.set_settings()
+                        elif action == 'main_menu':
+                            self.sound.play('menu_select')
+                            self.game_state.set_menu()
+                            self.sound.play_music('menu', is_menu=True)
 
             elif event.type == MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0] and self.game_state.is_settings():
@@ -376,6 +429,12 @@ class Game:
         if self.game_state.is_menu():
             Renderer.render_menu(self.sound, pygame.mouse.get_pos())
         
+        elif self.game_state.is_paused():
+            # Renderiza o jogo ao fundo (congelado)
+            Renderer.render_game_scene(self.level, self.player, current_time, self.sound)
+            # Renderiza menu de pause por cima
+            UI.draw_pause_menu(pygame.mouse.get_pos())
+
         elif self.game_state.is_playing():
             Renderer.render_game_scene(self.level, self.player, current_time, self.sound)
         
@@ -397,6 +456,70 @@ class Game:
         
         pygame.display.flip()
     
+    def save_game(self):
+        """Salva o progresso do jogo"""
+        import json
+        import os
+        
+        data = {
+            "level": self.level.current_level_index,
+            "stats": self.level.get_progress_stats()
+        }
+        
+        try:
+            save_dir = os.path.expanduser("~/.boxpush")
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+                
+            with open(os.path.join(save_dir, "savegame.json"), "w") as f:
+                json.dump(data, f)
+            print("Jogo salvo com sucesso!")
+            self.sound.play('menu_select') # Feedback sonoro
+        except Exception as e:
+            print(f"Erro ao salvar jogo: {e}")
+
+    def load_game(self):
+        """Carrega o progresso do jogo"""
+        import json
+        import os
+        
+        try:
+            save_path = os.path.expanduser("~/.boxpush/savegame.json")
+            if not os.path.exists(save_path):
+                print("Nenhum save encontrado.")
+                return False
+                
+            with open(save_path, "r") as f:
+                data = json.load(f)
+            
+            level_index = data.get("level", 0)
+            
+            # Carrega nível
+            if self.level.load_level(level_index):
+                self.player.set_position(*self.level.spawn_position)
+                self.player.reset_camera()
+                self.game_state.set_playing()
+                self.sound.play('level_start')
+                self.sound.play_music(level_index)
+                
+                # Restaura stats (opcional, se quiser manter contagem total)
+                # self.level.move_count = data.get("stats", {}).get("move_count", 0)
+                
+                pygame.event.set_grab(True)
+                pygame.mouse.set_visible(False)
+                pygame.mouse.set_pos(
+                    (self.window_width // 2, self.window_height // 2)
+                )
+                print(f"Jogo carregado: Nível {level_index}")
+                return True
+            else:
+                print("Erro ao carregar nível do save.")
+                return False
+                
+        except Exception as e:
+            print(f"Erro ao carregar jogo: {e}")
+            return False
+
     def run(self):
         """Loop principal do jogo"""
         running = True

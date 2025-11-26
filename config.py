@@ -35,10 +35,10 @@ GRID_SIZE = 1.0             # Tamanho da grade do mundo
 # -----------------------------
 GAME_STATE_MENU = 0
 GAME_STATE_PLAYING = 1
-GAME_STATE_WIN = 2
-GAME_STATE_WIN = 2
-GAME_STATE_FINAL_VICTORY = 3
-GAME_STATE_SETTINGS = 4
+GAME_STATE_PAUSED = 2
+GAME_STATE_WIN = 3
+GAME_STATE_FINAL_VICTORY = 4
+GAME_STATE_SETTINGS = 5
 
 # -----------------------------
 # Configurações de Renderização

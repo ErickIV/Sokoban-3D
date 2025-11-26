@@ -12,7 +12,7 @@ from OpenGL.GL import (
     glGenLists, glNewList, glEndList, glCallList, glDeleteLists,
     glEnable, glDisable, glBlendFunc,
     glPushMatrix, glPopMatrix, glTranslatef, glRotatef, glScalef, glLineWidth,
-    GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN,
+    GL_QUADS, GL_COMPILE, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN, GL_LINE_LOOP,
     GL_LIGHTING, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
     glTexCoord2f
 )
@@ -265,18 +265,16 @@ class Primitives:
                 dy = y - center
                 dist = math.sqrt(dx*dx + dy*dy)
                 
-                # Gradiente radial suave com glow mais forte
+                # Círculo sólido e simples (mais "cute" e limpo)
                 if dist > max_dist:
                     alpha = 0
                 else:
-                    # Função de decaimento suave (glow)
-                    norm_dist = dist / max_dist
-                    # Curve mais agressiva para centro mais brilhante
-                    alpha = max(0, 1.0 - norm_dist)
-                    alpha = math.pow(alpha, 1.5) # Menos agressivo que ^2 para melhor transição
-                    # Boost adicional no centro
-                    if norm_dist < 0.3:
-                        alpha = min(1.0, alpha * 1.5)
+                    # Borda suave mas definida (antialiasing simples)
+                    edge_width = 2.0
+                    if dist > max_dist - edge_width:
+                        alpha = (max_dist - dist) / edge_width
+                    else:
+                        alpha = 1.0
                 
                 a = int(alpha * 255)
                 texture_data.extend([255, 255, 255, a])
@@ -477,73 +475,50 @@ class Primitives:
     @staticmethod
     def draw_target_marker(x, y, z):
         """
-        Desenha marcador de objetivo (círculo + X) com GLOW PULSANTE.
+        Desenha marcador de alvo SIMPLES e LIMPO - X vermelho em círculo.
 
         Args:
             x, y, z: Posição do objetivo
         """
         glPushMatrix()
-        glTranslatef(x, y - 0.95, z)
-        glDisable(GL_LIGHTING)
+        glTranslatef(x, y - 0.94, z)  # Levemente acima do chão
+        glDisable(GL_LIGHTING)  # Cores emissivas puras
 
-        # Efeito de pulsação (respira entre 0.7 e 1.0)
-        pulse = 0.85 + 0.15 * math.sin(time.time() * 2.5)
+        # Efeito de pulsação suave
+        pulse = 0.9 + 0.1 * math.sin(time.time() * 2.0)
 
-        # === GLOW LAYER 1 (mais externo, muito transparente) ===
         glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE)  # Additive blending para glow
-
-        glColor4f(0.3, 0.8, 1.0, 0.15 * pulse)
-        glBegin(GL_TRIANGLE_FAN)
-        glVertex3f(0, 0, 0)
-        radius_outer = 0.55
-        for i in range(0, 361, 12):
-            angle = math.radians(i)
-            glVertex3f(math.cos(angle) * radius_outer, 0, math.sin(angle) * radius_outer)
-        glEnd()
-
-        # === GLOW LAYER 2 (médio) ===
-        glColor4f(0.2, 0.75, 1.0, 0.3 * pulse)
-        glBegin(GL_TRIANGLE_FAN)
-        glVertex3f(0, 0, 0)
-        radius_mid = 0.45
-        for i in range(0, 361, 12):
-            angle = math.radians(i)
-            glVertex3f(math.cos(angle) * radius_mid, 0, math.sin(angle) * radius_mid)
-        glEnd()
-
-        # === CÍRCULO AZUL BASE ===
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glColor4f(0.1, 0.7, 1.0, 0.9)
+
+        # === CÍRCULO BASE VERMELHO CLARO ===
+        glColor4f(0.9, 0.15, 0.1, 0.7)
         glBegin(GL_TRIANGLE_FAN)
         glVertex3f(0, 0, 0)
-        radius = 0.35
-        for i in range(0, 361, 12):
+        radius = 0.42
+        for i in range(0, 361, 15):
             angle = math.radians(i)
             glVertex3f(math.cos(angle) * radius, 0, math.sin(angle) * radius)
         glEnd()
 
-        # === X VERMELHO COM GLOW ===
-        # Glow do X (additive)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
-        glColor4f(1.0, 0.3, 0.3, 0.4 * pulse)
-        glLineWidth(12.0)
-        glBegin(GL_LINES)
-        glVertex3f(-0.28, 0.01, -0.28)
-        glVertex3f(0.28, 0.01, 0.28)
-        glVertex3f(0.28, 0.01, -0.28)
-        glVertex3f(-0.28, 0.01, 0.28)
+        # === BORDA DO CÍRCULO (mais escura) ===
+        glLineWidth(2.5)
+        glColor4f(0.7, 0.0, 0.0, 0.9)
+        glBegin(GL_LINE_LOOP)
+        for i in range(0, 361, 15):
+            angle = math.radians(i)
+            glVertex3f(math.cos(angle) * radius, 0, math.sin(angle) * radius)
         glEnd()
 
-        # X principal
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glColor4f(1.0, 0.0, 0.0, 1.0)
-        glLineWidth(7.0)
+        # === X VERMELHO ESCURO (principal) ===
+        glLineWidth(6.0)
+        glColor4f(0.85, 0.0, 0.0, 1.0 * pulse)
         glBegin(GL_LINES)
-        glVertex3f(-0.25, 0.01, -0.25)
-        glVertex3f(0.25, 0.01, 0.25)
-        glVertex3f(0.25, 0.01, -0.25)
-        glVertex3f(-0.25, 0.01, 0.25)
+        # Diagonal 1
+        glVertex3f(-0.28, 0.01, -0.28)
+        glVertex3f(0.28, 0.01, 0.28)
+        # Diagonal 2
+        glVertex3f(0.28, 0.01, -0.28)
+        glVertex3f(-0.28, 0.01, 0.28)
         glEnd()
 
         glLineWidth(1.0)
