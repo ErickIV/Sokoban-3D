@@ -31,7 +31,7 @@ import math
 from typing import Tuple, List
 from config import (
     PLAYER_EYE_HEIGHT, PLAYER_RADIUS, MOVE_SPEED,
-    RUN_MULTIPLIER, MOUSE_SENSITIVITY
+    RUN_MULTIPLIER, MOUSE_SENSITIVITY, INVERT_CAMERA_Y
 )
 from .physics import Physics
 from utils.sound import get_sound_manager
@@ -89,7 +89,13 @@ class Player:
             dy: Movimento vertical do mouse
         """
         self.camera_yaw += dx * MOUSE_SENSITIVITY
-        self.camera_pitch -= dy * MOUSE_SENSITIVITY
+        
+        # Aplica inversão do Y se configurado
+        pitch_delta = dy * MOUSE_SENSITIVITY
+        if INVERT_CAMERA_Y:
+            pitch_delta = -pitch_delta
+        
+        self.camera_pitch += pitch_delta
         
         # Limita pitch para evitar gimbal lock
         self.camera_pitch = max(-89.0, min(89.0, self.camera_pitch))

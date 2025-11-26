@@ -25,8 +25,9 @@ PLAYER_RADIUS = 0.35        # Raio de colisão no plano XZ
 MOVE_SPEED = 3.0            # Velocidade de movimento (m/s)
 RUN_MULTIPLIER = 1.65       # Multiplicador ao segurar SHIFT
 MOUSE_SENSITIVITY = 0.12    # Sensibilidade do mouse (deg/pixel)
-DEFAULT_MUSIC_VOLUME = 0.3  # Volume padrão da música
-DEFAULT_SFX_VOLUME = 0.4    # Volume padrão dos efeitos
+INVERT_CAMERA_Y = False     # Inverte o eixo Y da câmera (False = padrão, True = invertido)
+DEFAULT_MUSIC_VOLUME = 0.1  # Volume padrão da música
+DEFAULT_SFX_VOLUME = 0.1    # Volume padrão dos efeitos
 PUSH_COOLDOWN = 0.18        # Intervalo entre empurrões (segundos)
 GRID_SIZE = 1.0             # Tamanho da grade do mundo
 
