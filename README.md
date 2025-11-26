@@ -121,6 +121,7 @@ Ambiente3D---BoxPush/
 ### Pré-requisitos
 ```bash
 Python 3.8 ou superior
+PyOpenGL
 ```
 
 ### Instalação das Dependências
@@ -561,3 +562,4 @@ Para dúvidas, sugestões ou reportar bugs:
 - 📖 Leia `IMPROVEMENTS.md` para detalhes técnicos
 
 **Projeto mantido com ❤️ e boas práticas de engenharia de software.**
+

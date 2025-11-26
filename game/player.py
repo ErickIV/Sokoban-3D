@@ -89,7 +89,7 @@ class Player:
             dy: Movimento vertical do mouse
         """
         self.camera_yaw += dx * MOUSE_SENSITIVITY
-        self.camera_pitch -= dy * MOUSE_SENSITIVITY
+        self.camera_pitch += dy * MOUSE_SENSITIVITY
         
         # Limita pitch para evitar gimbal lock
         self.camera_pitch = max(-89.0, min(89.0, self.camera_pitch))
