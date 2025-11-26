@@ -39,3 +39,4 @@ desktop.ini
 
 # Claude Code
 .claude/
+.github/copilot-instructions.md
